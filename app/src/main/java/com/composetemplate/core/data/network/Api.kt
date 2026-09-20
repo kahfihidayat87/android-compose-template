@@ -1,13 +1,11 @@
 package com.composetemplate.core.data.network
 
 import com.composetemplate.core.data.network.dtos.PostDto
-import com.composetemplate.core.data.network.dtos.ProductDetailResponse
-import com.composetemplate.core.data.network.dtos.ProductsResponse
+import com.composetemplate.core.data.network.dtos.ProductDto
 import com.composetemplate.core.data.network.dtos.ResourceDetailsDto
 import com.composetemplate.core.data.network.dtos.ResourceDto
 import com.composetemplate.core.data.network.responses.LoginResponse
 import com.composetemplate.core.data.network.responses.ResourcesResponse
-import com.composetemplate.core.data.network.responses.UserResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -22,20 +20,17 @@ data class LoginRequest(
 )
 
 interface Api {
-    @POST("api/auth/login")
+    @POST("api/customer/login")
     suspend fun postLogin(@Body body: LoginRequest): Response<LoginResponse>
 
     @GET("api/products")
-    suspend fun getProducts(): Response<ProductsResponse>
+    suspend fun getProducts(): Response<List<ProductDto>>
 
     @GET("api/products/{id}")
-    suspend fun getProduct(@Path("id") id: String): Response<ProductDetailResponse>
+    suspend fun getProduct(@Path("id") id: Int): Response<ProductDto>
 
     @GET("posts")
     suspend fun getPosts(): Response<List<PostDto>>
-
-    @GET("users/2")
-    suspend fun getUser(): Response<UserResponse>
 
     @GET("pokemon")
     suspend fun getResources(

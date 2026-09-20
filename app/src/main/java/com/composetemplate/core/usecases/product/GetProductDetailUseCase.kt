@@ -10,7 +10,7 @@ class GetProductDetailUseCase @Inject constructor(
     private val productRepository: ProductRepository,
     @DefaultDispatcher private val coroutineDispatcher: CoroutineDispatcher
 ) {
-    operator fun invoke(id: String) = useCaseFlow(coroutineDispatcher) {
+    operator fun invoke(id: Int) = useCaseFlow(coroutineDispatcher) {
         productRepository.getProduct(id)
     }
 }

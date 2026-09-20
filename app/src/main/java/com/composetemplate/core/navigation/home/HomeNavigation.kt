@@ -12,7 +12,7 @@ fun NavController.navigateToHome(navOptions: NavOptions? = null) {
     this.navigate(homeNavigationRoute, navOptions)
 }
 
-fun NavGraphBuilder.homeScreen(onProductClick: (String) -> Unit) {
+fun NavGraphBuilder.homeScreen(onProductClick: (Int) -> Unit) {
     composable(route = homeNavigationRoute) {
         HomeRoute(onProductClick = onProductClick)
     }

@@ -16,12 +16,15 @@ class ProductDetailViewModel @Inject constructor(
 ) : ViewModel(), ViewErrorAware, LoadingAware {
 
     val product = MutableStateFlow<Product?>(null)
-    val selectedSize = MutableStateFlow(42)
+    val selectedSize = MutableStateFlow<Int?>(null)
     val quantity = MutableStateFlow(1)
 
-    fun load(id: String) {
+    fun load(id: Int) {
         collectFlow(getProductDetailUseCase(id)) {
             product.value = it
+            if (selectedSize.value == null) {
+                selectedSize.value = it.sizes.firstOrNull()
+            }
         }
     }
 

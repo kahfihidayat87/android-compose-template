@@ -11,7 +11,7 @@ const val productIdArg = "productId"
 internal const val productDetailRoute = "product_detail_route"
 internal const val productDetailNavigationRoute = "$productDetailRoute/{$productIdArg}"
 
-fun NavController.navigateToProductDetail(productId: String) {
+fun NavController.navigateToProductDetail(productId: Int) {
     this.navigate("$productDetailRoute/$productId")
 }
 

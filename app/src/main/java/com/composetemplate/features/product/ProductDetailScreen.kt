@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -25,10 +26,9 @@ import com.composetemplate.core.domain.model.Product
 import java.text.NumberFormat
 import java.util.Locale
 
-private val SIZES = listOf(36, 37, 38, 39, 40, 41, 42, 43, 44)
-
 private fun imageUrl(path: String?): String? {
     if (path.isNullOrEmpty()) return null
+    if (path.startsWith("http")) return path
     return BuildConfig.API_URL.trimEnd('/') + path
 }
 
@@ -45,12 +45,13 @@ internal fun ProductDetailRoute(
     modifier: Modifier = Modifier,
     viewModel: ProductDetailViewModel = hiltViewModel()
 ) {
+    val id = productId.toIntOrNull()
     val product = viewModel.product.collectAsStateLifecycleAware().value
     val selectedSize = viewModel.selectedSize.collectAsStateLifecycleAware().value
     val quantity = viewModel.quantity.collectAsStateLifecycleAware().value
 
-    LaunchedEffect(productId) {
-        viewModel.load(productId)
+    LaunchedEffect(id) {
+        if (id != null) viewModel.load(id)
     }
 
     if (product == null) {
@@ -74,7 +75,7 @@ internal fun ProductDetailRoute(
 @Composable
 fun ProductDetailScreen(
     product: Product,
-    selectedSize: Int,
+    selectedSize: Int?,
     quantity: Int,
     onBackClick: () -> Unit,
     onSizeSelected: (Int) -> Unit,
@@ -106,7 +107,7 @@ fun ProductDetailScreen(
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                val url = imageUrl(product.image)
+                val url = imageUrl(product.img)
                 if (url != null) {
                     AsyncImage(
                         model = url,
@@ -115,15 +116,16 @@ fun ProductDetailScreen(
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    Text(product.emoji ?: "S", fontSize = 120.sp)
+                    Text("S", fontSize = 120.sp)
                 }
             }
 
             Column(modifier = Modifier.padding(20.dp)) {
+                Text(product.name, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                 Text(
-                    text = product.name,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
+                    text = product.category,
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Spacer(Modifier.height(8.dp))
@@ -135,33 +137,26 @@ fun ProductDetailScreen(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(Modifier.width(12.dp))
-                    Text(
-                        text = "★ ${product.rating}",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text(
-                        text = "(${product.reviews} ulasan)",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    if (product.oldPrice != null && product.oldPrice > product.price) {
+                        Spacer(Modifier.width(12.dp))
+                        Text(
+                            text = formatRupiah(product.oldPrice),
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textDecoration = TextDecoration.LineThrough
+                        )
+                    }
                 }
 
                 Spacer(Modifier.height(20.dp))
 
-                Text(
-                    text = "Pilih Ukuran (EU)",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Text("Pilih Ukuran (EU)", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.height(8.dp))
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    SIZES.forEach { size ->
+                    product.sizes.forEach { size ->
                         FilterChip(
                             selected = selectedSize == size,
                             onClick = { onSizeSelected(size) },
@@ -172,11 +167,7 @@ fun ProductDetailScreen(
 
                 Spacer(Modifier.height(20.dp))
 
-                Text(
-                    text = "Jumlah",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Text("Jumlah", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.height(8.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -185,7 +176,7 @@ fun ProductDetailScreen(
                     OutlinedButton(
                         onClick = { onQuantityChanged(quantity - 1) },
                         enabled = quantity > 1
-                    ) { Text("−", fontSize = 20.sp) }
+                    ) { Text("-", fontSize = 20.sp) }
                     Text(
                         text = quantity.toString(),
                         fontSize = 18.sp,
@@ -200,14 +191,10 @@ fun ProductDetailScreen(
 
                 Spacer(Modifier.height(20.dp))
 
-                Text(
-                    text = "Deskripsi",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Text("Deskripsi", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    text = product.description,
+                    text = product.desc.ifEmpty { "Belum ada deskripsi." },
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 20.sp
@@ -224,9 +211,7 @@ fun ProductDetailScreen(
             shadowElevation = 8.dp
         ) {
             Row(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth(),
+                modifier = Modifier.padding(16.dp).fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
@@ -238,7 +223,7 @@ fun ProductDetailScreen(
                     )
                 }
                 Button(
-                    onClick = { /* TODO: add to cart */ },
+                    onClick = { },
                     modifier = Modifier.height(52.dp)
                 ) {
                     Text("Tambah ke Keranjang", fontWeight = FontWeight.Bold)

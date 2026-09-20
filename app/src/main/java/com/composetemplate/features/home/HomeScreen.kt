@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -29,21 +30,22 @@ import java.util.Locale
 
 private val CATEGORIES = listOf(
     "all" to "Semua",
-    "slipon" to "Slip-On",
-    "sneakers" to "Sneakers",
-    "new" to "Terbaru",
-    "best" to "Best Seller"
+    "Slip-On" to "Slip-On",
+    "Sneakers" to "Sneakers",
+    "BARU" to "Baru",
+    "DISKON" to "Diskon"
 )
 
 private fun imageUrl(path: String?): String? {
     if (path.isNullOrEmpty()) return null
+    if (path.startsWith("http")) return path
     return BuildConfig.API_URL.trimEnd('/') + path
 }
 
 @Composable
 fun HomeRoute(
     modifier: Modifier = Modifier,
-    onProductClick: (String) -> Unit = {},
+    onProductClick: (Int) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val allProducts = viewModel.products.collectAsStateLifecycleAware().value
@@ -52,8 +54,8 @@ fun HomeRoute(
     val filtered = remember(allProducts, selectedCategory) {
         when (selectedCategory) {
             "all" -> allProducts
-            "new" -> allProducts.filter { it.isNew }
-            "best" -> allProducts.filter { it.isBestSeller }
+            "BARU" -> allProducts.filter { it.badge == "BARU" }
+            "DISKON" -> allProducts.filter { it.badge == "DISKON" }
             else -> allProducts.filter { it.category == selectedCategory }
         }
     }
@@ -72,7 +74,7 @@ fun HomeScreen(
     products: List<Product>,
     selectedCategory: String,
     onCategorySelected: (String) -> Unit,
-    onProductClick: (String) -> Unit,
+    onProductClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxSize()) {
@@ -123,7 +125,7 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(products) { product ->
+                items(products, key = { it.id }) { product ->
                     ProductCard(
                         product = product,
                         onClick = { onProductClick(product.id) }
@@ -137,9 +139,7 @@ fun HomeScreen(
 @Composable
 private fun ProductCard(product: Product, onClick: () -> Unit) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
+        modifier = Modifier.fillMaxWidth().clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -152,7 +152,7 @@ private fun ProductCard(product: Product, onClick: () -> Unit) {
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                val url = imageUrl(product.image)
+                val url = imageUrl(product.img)
                 if (url != null) {
                     AsyncImage(
                         model = url,
@@ -161,16 +161,17 @@ private fun ProductCard(product: Product, onClick: () -> Unit) {
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    Text(product.emoji ?: "S", fontSize = 64.sp)
+                    Text("S", fontSize = 64.sp)
                 }
-                if (product.isNew) {
+                if (product.badge != null) {
                     Surface(
                         modifier = Modifier.align(Alignment.TopStart).padding(8.dp),
-                        color = MaterialTheme.colorScheme.primary,
+                        color = if (product.badge == "DISKON") MaterialTheme.colorScheme.error
+                                else MaterialTheme.colorScheme.primary,
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = "BARU",
+                            text = product.badge,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
@@ -183,17 +184,22 @@ private fun ProductCard(product: Product, onClick: () -> Unit) {
             Spacer(Modifier.height(8.dp))
             Text(product.name, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 2)
             Spacer(Modifier.height(4.dp))
-            Text(
-                text = formatRupiah(product.price),
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("★ ${product.rating}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(Modifier.width(6.dp))
-                Text("(${product.reviews})", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    text = formatRupiah(product.price),
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                if (product.oldPrice != null && product.oldPrice > product.price) {
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        text = formatRupiah(product.oldPrice),
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textDecoration = TextDecoration.LineThrough
+                    )
+                }
             }
         }
     }
