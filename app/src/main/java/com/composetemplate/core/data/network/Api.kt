@@ -1,6 +1,7 @@
 package com.composetemplate.core.data.network
 
 import com.composetemplate.core.data.network.dtos.PostDto
+import com.composetemplate.core.data.network.dtos.ProductsResponse
 import com.composetemplate.core.data.network.dtos.ResourceDetailsDto
 import com.composetemplate.core.data.network.dtos.ResourceDto
 import com.composetemplate.core.data.network.responses.LoginResponse
@@ -22,6 +23,9 @@ data class LoginRequest(
 interface Api {
     @POST("api/auth/login")
     suspend fun postLogin(@Body body: LoginRequest): Response<LoginResponse>
+
+    @GET("api/products")
+    suspend fun getProducts(): Response<ProductsResponse>
 
     @GET("posts")
     suspend fun getPosts(): Response<List<PostDto>>
