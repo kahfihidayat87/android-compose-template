@@ -6,6 +6,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
@@ -17,8 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -37,6 +37,7 @@ import coil.compose.AsyncImage
 import com.composetemplate.BuildConfig
 import com.composetemplate.arch.extensions.collectAsStateLifecycleAware
 import com.composetemplate.core.domain.model.Product
+import com.composetemplate.core.domain.model.User
 import com.composetemplate.features.theme.ThemeViewModel
 import java.text.NumberFormat
 import java.util.Locale
@@ -53,9 +54,11 @@ fun HomeRoute(
     onProductClick: (Int) -> Unit = {},
     onCartClick: () -> Unit = {},
     onWishlistClick: () -> Unit = {},
+    onAccountClick: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
     wishlistViewModel: com.composetemplate.features.wishlist.WishlistViewModel = hiltViewModel(),
-    themeViewModel: ThemeViewModel = hiltViewModel()
+    themeViewModel: ThemeViewModel = hiltViewModel(),
+    accountViewModel: com.composetemplate.features.account.AccountViewModel = hiltViewModel(),
 ) {
     val allProducts = viewModel.products.collectAsStateLifecycleAware().value
     val dynamicCategories = viewModel.categories.collectAsStateLifecycleAware().value
@@ -63,11 +66,8 @@ fun HomeRoute(
     val searchQuery = viewModel.searchQuery.collectAsStateLifecycleAware().value
     val wishlistIds = wishlistViewModel.items.collectAsStateLifecycleAware().value.map { it.id }.toSet()
     val darkModePref = themeViewModel.darkMode.collectAsStateLifecycleAware().value
+    val user = accountViewModel.user.collectAsStateLifecycleAware().value
     val isDark = darkModePref ?: isSystemInDarkTheme()
-
-    val categories = remember(dynamicCategories) {
-        dynamicCategories.map { it.name }
-    }
 
     val filtered = remember(allProducts, selectedCategory, searchQuery) {
         var result = allProducts
@@ -85,16 +85,18 @@ fun HomeRoute(
     HomeScreen(
         products = filtered,
         allProducts = allProducts,
-        categories = categories,
+        categories = dynamicCategories.map { it.name },
         selectedCategory = selectedCategory,
         searchQuery = searchQuery,
         wishlistIds = wishlistIds,
         isDark = isDark,
+        user = user,
         onCategorySelected = viewModel::onCategorySelected,
         onSearchChanged = viewModel::onSearchChanged,
         onProductClick = onProductClick,
         onCartClick = onCartClick,
         onWishlistClick = onWishlistClick,
+        onAccountClick = onAccountClick,
         onToggleWishlist = { product -> wishlistViewModel.toggle(product) },
         onToggleDarkMode = { themeViewModel.toggle(isDark) },
         modifier = modifier
@@ -110,11 +112,13 @@ fun HomeScreen(
     searchQuery: String,
     wishlistIds: Set<Int>,
     isDark: Boolean,
+    user: User?,
     onCategorySelected: (String) -> Unit,
     onSearchChanged: (String) -> Unit,
     onProductClick: (Int) -> Unit,
     onCartClick: () -> Unit,
     onWishlistClick: () -> Unit,
+    onAccountClick: () -> Unit,
     onToggleWishlist: (Product) -> Unit,
     onToggleDarkMode: () -> Unit,
     modifier: Modifier = Modifier
@@ -133,6 +137,12 @@ fun HomeScreen(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
+                    text = "Selamat berbelanja di",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
                     text = "Sepatumu A-DHL",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Black,
@@ -140,19 +150,22 @@ fun HomeScreen(
                     letterSpacing = (-0.5).sp
                 )
                 Text(
-                    text = "Sepatunya warga Muhammadiyah",
-                    fontSize = 12.sp,
+                    text = "Sepatunya Muhammadiyah",
+                    fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "Halo, ${user?.name ?: "Sobat A-DHL"} 👋",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
             IconButton(onClick = onToggleDarkMode) {
                 Text(text = if (isDark) "☀️" else "🌙", fontSize = 20.sp)
             }
-            IconButton(onClick = onWishlistClick) {
-                Icon(Icons.Default.FavoriteBorder, contentDescription = "Wishlist")
-            }
-            IconButton(onClick = onCartClick) {
-                Icon(Icons.Default.ShoppingCart, contentDescription = "Keranjang")
+            IconButton(onClick = onAccountClick) {
+                Icon(Icons.Default.Settings, contentDescription = "Pengaturan")
             }
         }
 
@@ -162,8 +175,7 @@ fun HomeScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // ============ SEARCH BAR ============
-            item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = onSearchChanged,
@@ -175,14 +187,12 @@ fun HomeScreen(
                 )
             }
 
-            // ============ HERO BANNER ============
             if (searchQuery.isBlank() && selectedCategory == "all") {
-                item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     HeroBannerCarousel()
                 }
 
-                // ============ KATEGORI ============
-                item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     Column {
                         SectionHeader(title = "Kategori", subtitle = "Pilih sesuai gayamu")
                         LazyRow(
@@ -207,13 +217,11 @@ fun HomeScreen(
                     }
                 }
 
-                // ============ TERLARIS ============
                 if (bestSellers.isNotEmpty()) {
-                    item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
                         SectionHeader(title = "Paling Diminati", subtitle = "Produk favorit pelanggan")
                     }
-
-                    items(bestSellers, key = { "best-${it.id}" }, span = { androidx.compose.foundation.lazy.grid.GridItemSpan(1) }) { product ->
+                    items(bestSellers, key = { "best-${it.id}" }) { product ->
                         ProductCard(
                             product = product,
                             isWishlisted = wishlistIds.contains(product.id),
@@ -223,13 +231,11 @@ fun HomeScreen(
                     }
                 }
 
-                // ============ SEMUA PRODUK ============
-                item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     SectionHeader(title = "Semua Koleksi", subtitle = "Sepatu lokal berkualitas")
                 }
             }
 
-            // Produk (difilter atau semua)
             items(products, key = { it.id }) { product ->
                 ProductCard(
                     product = product,
@@ -239,9 +245,8 @@ fun HomeScreen(
                 )
             }
 
-            // Empty state
             if (products.isEmpty()) {
-                item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     Box(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 60.dp),
                         contentAlignment = Alignment.Center
@@ -266,30 +271,16 @@ fun HomeScreen(
 @Composable
 private fun SectionHeader(title: String, subtitle: String) {
     Column(modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)) {
-        Text(
-            text = title,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        Text(
-            text = subtitle,
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        Text(title, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
 @Composable
-private fun CategoryPill(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
+private fun CategoryPill(label: String, selected: Boolean, onClick: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(20.dp),
-        color = if (selected) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.surfaceVariant,
+        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
         onClick = onClick
     ) {
         Text(
@@ -297,8 +288,7 @@ private fun CategoryPill(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             fontSize = 13.sp,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-            color = if (selected) MaterialTheme.colorScheme.onPrimary
-                    else MaterialTheme.colorScheme.onSurfaceVariant
+            color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -310,20 +300,20 @@ private fun HeroBannerCarousel() {
             HeroBanner(
                 title = "Koleksi Terbaru",
                 subtitle = "Sepatu kanvas breathable dari Gunungkidul",
-                emoji = "👟",
-                gradient = listOf(Color(0xFF0066FF), Color(0xFF003A99))
+                imageUrl = "https://sepatumu.id/images/slip-on-black.jpg",
+                emoji = "👟"
             ),
             HeroBanner(
                 title = "Mulai Rp149.000",
                 subtitle = "Kualitas premium, harga merakyat",
-                emoji = "✨",
-                gradient = listOf(Color(0xFFFF6A2C), Color(0xFFCC3D00))
+                imageUrl = "https://sepatumu.id/images/sneakers-red.jpg",
+                emoji = "✨"
             ),
             HeroBanner(
-                title = "Dukung Ekonomi Umat",
-                subtitle = "Produk lokal PDM Gunungkidul",
-                emoji = "🤝",
-                gradient = listOf(Color(0xFF10B981), Color(0xFF047857))
+                title = "Gerakan Wakaf Sepatu",
+                subtitle = "Salurkan sepatu untuk santri & dhuafa",
+                imageUrl = "https://sepatumu.id/images/adhl-promo-banner.jpg",
+                emoji = "🤝"
             ),
         )
     }
@@ -332,38 +322,47 @@ private fun HeroBannerCarousel() {
     Column {
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(160.dp)
+            modifier = Modifier.fillMaxWidth().height(180.dp)
         ) { pageIndex ->
             val banner = banners[pageIndex]
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(20.dp))
-                    .background(Brush.linearGradient(banner.gradient))
-                    .padding(20.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalAlignment = Alignment.CenterVertically
+                AsyncImage(
+                    model = banner.imageUrl,
+                    contentDescription = banner.title,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(Color.Transparent, Color.Black.copy(alpha = 0.75f))
+                            )
+                        )
+                )
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(20.dp)
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = banner.title,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Black,
-                            color = Color.White
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = banner.subtitle,
-                            fontSize = 12.sp,
-                            color = Color.White.copy(alpha = 0.85f),
-                            lineHeight = 16.sp
-                        )
-                    }
-                    Text(text = banner.emoji, fontSize = 64.sp)
+                    Text(
+                        text = banner.emoji + " " + banner.title,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = banner.subtitle,
+                        fontSize = 12.sp,
+                        color = Color.White.copy(alpha = 0.9f),
+                        lineHeight = 16.sp
+                    )
                 }
             }
         }
@@ -393,8 +392,8 @@ private fun HeroBannerCarousel() {
 data class HeroBanner(
     val title: String,
     val subtitle: String,
+    val imageUrl: String,
     val emoji: String,
-    val gradient: List<Color>,
 )
 
 @Composable
@@ -407,8 +406,7 @@ private fun ProductCard(
     Card(
         modifier = Modifier.fillMaxWidth().clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column {
             Box(
@@ -429,7 +427,6 @@ private fun ProductCard(
                 } else {
                     Text("S", fontSize = 64.sp)
                 }
-                // Wishlist button
                 Surface(
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
@@ -448,7 +445,6 @@ private fun ProductCard(
                         )
                     }
                 }
-                // Badge
                 if (product.badge != null) {
                     Surface(
                         modifier = Modifier.align(Alignment.TopStart).padding(8.dp),
@@ -461,8 +457,7 @@ private fun ProductCard(
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Black,
-                            color = Color.White,
-                            letterSpacing = 0.5.sp
+                            color = Color.White
                         )
                     }
                 }
@@ -473,8 +468,7 @@ private fun ProductCard(
                     text = product.category,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    letterSpacing = 0.5.sp
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
@@ -482,8 +476,7 @@ private fun ProductCard(
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 2,
-                    lineHeight = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurface
+                    lineHeight = 16.sp
                 )
                 Spacer(Modifier.height(6.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {

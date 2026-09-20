@@ -8,7 +8,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -128,7 +127,7 @@ fun AccountRoute(
             modifier = Modifier.fillMaxWidth().height(52.dp),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
         ) {
-            Icon(Icons.Default.Logout, contentDescription = null)
+            Text("↩", fontSize = 20.sp, color = MaterialTheme.colorScheme.error)
             Spacer(Modifier.width(8.dp))
             Text("Keluar", fontWeight = FontWeight.Bold)
         }
