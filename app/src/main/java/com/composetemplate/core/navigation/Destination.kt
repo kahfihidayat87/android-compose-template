@@ -10,12 +10,8 @@ import com.composetemplate.core.ui.Icon
 
 
 /**
- * Type for the top level destinations in the application. Each of these destinations
- * can contain one or more screens (based on the window size). Navigation from one screen to the
- * next within a single destination will be handled directly in composables.
+ * Type for the top level destinations in the application.
  */
-
-
 enum class Destination(
     val isTopLevelDestination: Boolean,
     val isBottomBarTab: Boolean,
@@ -38,8 +34,8 @@ enum class Destination(
     ),
     RESOURCES(
         isTopLevelDestination = true,
-        isBottomBarTab = true,
-        isTopBarTab = true,
+        isBottomBarTab = false,
+        isTopBarTab = false,
         selectedIcon = Icon.DrawableResourceIcon(AppIcons.Resources),
         unselectedIcon = Icon.DrawableResourceIcon(AppIcons.ResourcesBorder),
         iconTextId = R.string.resources,
