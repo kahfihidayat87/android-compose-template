@@ -9,6 +9,7 @@ fun ProductDto.toProduct(): Product {
         category = category,
         price = price,
         weight = weight,
+        image = image,
         emoji = emoji,
         isNew = isNew,
         isBestSeller = isBestSeller,

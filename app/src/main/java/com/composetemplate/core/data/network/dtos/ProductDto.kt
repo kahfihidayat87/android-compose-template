@@ -9,6 +9,7 @@ data class ProductDto(
     val category: String,
     val price: Int,
     val weight: Int,
+    val image: String? = null,
     val emoji: String? = null,
     val isNew: Boolean = false,
     val isBestSeller: Boolean = false,

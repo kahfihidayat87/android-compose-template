@@ -14,10 +14,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import com.composetemplate.BuildConfig
 import com.composetemplate.arch.extensions.collectAsStateLifecycleAware
 import com.composetemplate.core.domain.model.Product
 import java.text.NumberFormat
@@ -30,6 +33,12 @@ private val CATEGORIES = listOf(
     "new" to "Terbaru",
     "best" to "Best Seller"
 )
+
+private fun imageUrl(path: String?): String? {
+    if (path.isNullOrEmpty()) return null
+    val base = BuildConfig.API_URL.trimEnd('/')
+    return "$base$path"
+}
 
 @Composable
 fun HomeRoute(
@@ -135,10 +144,20 @@ private fun ProductCard(product: Product) {
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = product.emoji ?: "S",
-                    fontSize = 64.sp
-                )
+                val url = imageUrl(product.image)
+                if (url != null) {
+                    AsyncImage(
+                        model = url,
+                        contentDescription = product.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Text(
+                        text = product.emoji ?: "S",
+                        fontSize = 64.sp
+                    )
+                }
                 if (product.isNew) {
                     Surface(
                         modifier = Modifier

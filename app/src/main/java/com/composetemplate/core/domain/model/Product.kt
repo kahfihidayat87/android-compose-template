@@ -9,6 +9,7 @@ data class Product(
     val category: String,
     val price: Int,
     val weight: Int,
+    val image: String?,
     val emoji: String?,
     val isNew: Boolean,
     val isBestSeller: Boolean,
