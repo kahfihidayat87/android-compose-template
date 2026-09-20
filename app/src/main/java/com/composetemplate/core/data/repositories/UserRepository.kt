@@ -19,8 +19,8 @@ class UserRepository @Inject constructor(
         val response: LoginResponse = repoCall {
             api.postLogin(LoginRequest(email, password))
         }
-        val user = response.user?.toUser()
-            ?: throw RepositoryException(response.message ?: "Login gagal")
+        val user: User = response.user?.toUser()
+            ?: throw IllegalStateException(response.message ?: "Login gagal")
         userPreferenceStore.add(user)
         return user
     }
