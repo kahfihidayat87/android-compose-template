@@ -11,10 +11,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
@@ -136,9 +134,9 @@ fun HomeScreen(
                 )
             }
             IconButton(onClick = onToggleDarkMode) {
-                Icon(
-                    imageVector = if (isDark) Icons.Default.LightMode else Icons.Default.DarkMode,
-                    contentDescription = "Dark mode"
+                Text(
+                    text = if (isDark) "☀️" else "🌙",
+                    fontSize = 20.sp
                 )
             }
             IconButton(onClick = onWishlistClick) {
