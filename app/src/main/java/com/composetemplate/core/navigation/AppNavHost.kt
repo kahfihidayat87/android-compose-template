@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.composetemplate.core.navigation.cart.cartScreen
+import com.composetemplate.core.navigation.cart.navigateToCart
 import com.composetemplate.core.navigation.home.homeScreen
 import com.composetemplate.core.navigation.home.navigateToHome
 import com.composetemplate.core.navigation.login.loginNavigationRoute
@@ -27,11 +29,17 @@ fun AppNavHost(
         startDestination = startDestination,
         modifier = modifier,
     ) {
-        homeScreen(onProductClick = { productId ->
-            navController.navigateToProductDetail(productId)
-        })
+        homeScreen(
+            onProductClick = { productId ->
+                navController.navigateToProductDetail(productId)
+            },
+            onCartClick = {
+                navController.navigateToCart()
+            }
+        )
         loginScreen(navigateToHome = { navController.navigateToHome() })
         productDetailScreen(onBackClick = onBackClick)
+        cartScreen(onBackClick = onBackClick)
         resourcesGraph(
             navController = navController,
             onItemClick = { navController.navigateToResourceDetails(it) },

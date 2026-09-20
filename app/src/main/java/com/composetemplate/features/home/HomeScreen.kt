@@ -9,6 +9,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -46,6 +48,7 @@ private fun imageUrl(path: String?): String? {
 fun HomeRoute(
     modifier: Modifier = Modifier,
     onProductClick: (Int) -> Unit = {},
+    onCartClick: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val allProducts = viewModel.products.collectAsStateLifecycleAware().value
@@ -65,6 +68,7 @@ fun HomeRoute(
         selectedCategory = selectedCategory,
         onCategorySelected = viewModel::onCategorySelected,
         onProductClick = onProductClick,
+        onCartClick = onCartClick,
         modifier = modifier
     )
 }
@@ -75,25 +79,35 @@ fun HomeScreen(
     selectedCategory: String,
     onCategorySelected: (String) -> Unit,
     onProductClick: (Int) -> Unit,
+    onCartClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxSize()) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Sepatumu",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Text(
-                text = "Sepatu lokal Muhammadiyah",
-                fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Sepatumu",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "Sepatu lokal Muhammadiyah",
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            IconButton(onClick = onCartClick) {
+                Icon(
+                    imageVector = Icons.Default.ShoppingCart,
+                    contentDescription = "Keranjang"
+                )
+            }
         }
 
         LazyRow(

@@ -10,6 +10,8 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,6 +25,7 @@ import coil.compose.AsyncImage
 import com.composetemplate.BuildConfig
 import com.composetemplate.arch.extensions.collectAsStateLifecycleAware
 import com.composetemplate.core.domain.model.Product
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -49,9 +52,20 @@ internal fun ProductDetailRoute(
     val product = viewModel.product.collectAsStateLifecycleAware().value
     val selectedSize = viewModel.selectedSize.collectAsStateLifecycleAware().value
     val quantity = viewModel.quantity.collectAsStateLifecycleAware().value
+    val added = viewModel.addedToCart.collectAsStateLifecycleAware().value
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(id) {
         if (id != null) viewModel.load(id)
+    }
+
+    LaunchedEffect(added) {
+        if (added) {
+            snackbarHostState.showSnackbar("Ditambahkan ke keranjang")
+            viewModel.consumeAddedFlag()
+        }
     }
 
     if (product == null) {
@@ -59,15 +73,24 @@ internal fun ProductDetailRoute(
             CircularProgressIndicator()
         }
     } else {
-        ProductDetailScreen(
-            product = product,
-            selectedSize = selectedSize,
-            quantity = quantity,
-            onBackClick = onBackClick,
-            onSizeSelected = viewModel::onSizeSelected,
-            onQuantityChanged = viewModel::onQuantityChanged,
-            modifier = modifier
-        )
+        Box(Modifier.fillMaxSize()) {
+            ProductDetailScreen(
+                product = product,
+                selectedSize = selectedSize,
+                quantity = quantity,
+                onBackClick = onBackClick,
+                onSizeSelected = viewModel::onSizeSelected,
+                onQuantityChanged = viewModel::onQuantityChanged,
+                onAddToCart = viewModel::addToCart,
+                modifier = modifier
+            )
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 96.dp)
+            )
+        }
     }
 }
 
@@ -80,6 +103,7 @@ fun ProductDetailScreen(
     onBackClick: () -> Unit,
     onSizeSelected: (Int) -> Unit,
     onQuantityChanged: (Int) -> Unit,
+    onAddToCart: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -223,7 +247,8 @@ fun ProductDetailScreen(
                     )
                 }
                 Button(
-                    onClick = { },
+                    onClick = onAddToCart,
+                    enabled = selectedSize != null,
                     modifier = Modifier.height(52.dp)
                 ) {
                     Text("Tambah ke Keranjang", fontWeight = FontWeight.Bold)
