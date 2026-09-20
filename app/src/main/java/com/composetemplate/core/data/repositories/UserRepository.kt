@@ -23,6 +23,7 @@ class UserRepository @Inject constructor(
             api.postLogin(LoginRequest(email, password))
         }
         val user = response.customer.toUser()
+        userPreferenceStore.clear()
         userPreferenceStore.add(user)
         tokenManager.saveToken(response.token)
         return user
@@ -33,6 +34,7 @@ class UserRepository @Inject constructor(
             api.postRegister(RegisterRequest(name, email, password, phone))
         }
         val user = response.customer.toUser()
+        userPreferenceStore.clear()
         userPreferenceStore.add(user)
         tokenManager.saveToken(response.token)
         return user

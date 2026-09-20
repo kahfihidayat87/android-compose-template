@@ -1,18 +1,17 @@
 package com.composetemplate.core.navigation
 
 import com.composetemplate.R
+import com.composetemplate.core.navigation.account.accountNavigationRoute
 import com.composetemplate.core.navigation.home.homeNavigationRoute
 import com.composetemplate.core.navigation.login.loginNavigationRoute
 import com.composetemplate.core.navigation.orders.ordersNavigationRoute
 import com.composetemplate.core.navigation.resource.resourceDetailsNavigationRoute
 import com.composetemplate.core.navigation.resource.resourcesNavigationRoute
+import com.composetemplate.core.navigation.wakaf.wakafNavigationRoute
 import com.composetemplate.core.ui.AppIcons
 import com.composetemplate.core.ui.Icon
 
 
-/**
- * Type for the top level destinations in the application.
- */
 enum class Destination(
     val isTopLevelDestination: Boolean,
     val isBottomBarTab: Boolean,
@@ -42,6 +41,26 @@ enum class Destination(
         iconTextId = R.string.orders,
         titleTextId = R.string.orders,
         route = ordersNavigationRoute
+    ),
+    WAKAF(
+        isTopLevelDestination = true,
+        isBottomBarTab = true,
+        isTopBarTab = true,
+        selectedIcon = Icon.DrawableResourceIcon(R.drawable.ic_wakaf),
+        unselectedIcon = Icon.DrawableResourceIcon(R.drawable.ic_wakaf_border),
+        iconTextId = R.string.wakaf,
+        titleTextId = R.string.wakaf,
+        route = wakafNavigationRoute
+    ),
+    ACCOUNT(
+        isTopLevelDestination = true,
+        isBottomBarTab = true,
+        isTopBarTab = true,
+        selectedIcon = Icon.DrawableResourceIcon(R.drawable.ic_account),
+        unselectedIcon = Icon.DrawableResourceIcon(R.drawable.ic_account_border),
+        iconTextId = R.string.account,
+        titleTextId = R.string.account,
+        route = accountNavigationRoute
     ),
     RESOURCES(
         isTopLevelDestination = true,

@@ -12,9 +12,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import com.composetemplate.core.navigation.*
+import com.composetemplate.core.navigation.account.navigateToAccount
 import com.composetemplate.core.navigation.home.navigateToHome
 import com.composetemplate.core.navigation.login.navigateToLogin
+import com.composetemplate.core.navigation.orders.navigateToOrders
 import com.composetemplate.core.navigation.resource.navigateToResourcesGraph
+import com.composetemplate.core.navigation.wakaf.navigateToWakaf
 import kotlinx.coroutines.CoroutineScope
 
 
@@ -48,25 +51,24 @@ class AppState(
 
     val currentDestination: Destination?
         @Composable get() = Destination.values().asList()
-            .filter { it.route == currentDestinationAsState?.route }.firstOrNull()
-
-    val shouldShowBottomBar: Boolean
-        @Composable get() = Destination.values().asList()
-            .filter { it.isBottomBarTab }.map { it.route }
-            .contains(currentDestinationAsState?.route)
+            .firstOrNull { destination ->
+                currentDestinationAsState?.route?.contains(destination.route, ignoreCase = true) ?: false
+            }
 
     val shouldShowTopAppBar: Boolean
-        @Composable get() = Destination.values().asList()
-            .filter { it.isTopBarTab }.map { it.route }.contains(currentDestinationAsState?.route)
+        @Composable get() {
+            val dest = currentDestination
+            return dest == null || dest.isTopBarTab.not() || dest == Destination.HOME
+        }
+
+    val shouldShowBottomBar: Boolean
+        @Composable get() {
+            val dest = currentDestination
+            return dest?.isBottomBarTab == true
+        }
 
     val destinationWithBottomBars: List<Destination>
-        get() = Destination.values().asList()
-            .filter { it.isBottomBarTab && it.isTopLevelDestination }
-
-    val destinationWithTopBar: List<Destination>
-        get() = Destination.values().asList()
-            .filter { it.isTopBarTab }
-
+        get() = Destination.values().filter { it.isBottomBarTab }
 
     fun navigateToTopLevelDestination(destination: Destination) {
         val topLevelNavOptions = navOptions {
@@ -78,25 +80,16 @@ class AppState(
         }
         when (destination) {
             Destination.HOME -> navController.navigateToHome(topLevelNavOptions)
-            Destination.RESOURCES -> navController.navigateToResourcesGraph(
-                topLevelNavOptions
-            )
-
+            Destination.ORDERS -> navController.navigateToOrders(topLevelNavOptions)
+            Destination.WAKAF -> navController.navigateToWakaf(topLevelNavOptions)
+            Destination.ACCOUNT -> navController.navigateToAccount(topLevelNavOptions)
+            Destination.RESOURCES -> navController.navigateToResourcesGraph(topLevelNavOptions)
             Destination.LOGIN -> navController.navigateToLogin(topLevelNavOptions)
             else -> {}
         }
-
     }
 
     fun onBackClick() {
         navController.popBackStack()
     }
-
-}
-
-@Composable
-@ReadOnlyComposable
-private fun resources(): Resources {
-    LocalConfiguration.current
-    return LocalContext.current.resources
 }

@@ -4,14 +4,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.composetemplate.core.navigation.account.accountScreen
 import com.composetemplate.core.navigation.cart.cartScreen
 import com.composetemplate.core.navigation.cart.navigateToCart
 import com.composetemplate.core.navigation.checkout.checkoutScreen
 import com.composetemplate.core.navigation.checkout.navigateToCheckout
 import com.composetemplate.core.navigation.checkout.navigateToPaymentWebView
 import com.composetemplate.core.navigation.checkout.paymentWebViewScreen
+import com.composetemplate.core.navigation.home.homeNavigationRoute
 import com.composetemplate.core.navigation.home.homeScreen
-import com.composetemplate.core.navigation.home.navigateToHome
 import com.composetemplate.core.navigation.login.loginNavigationRoute
 import com.composetemplate.core.navigation.login.loginScreen
 import com.composetemplate.core.navigation.login.navigateToRegister
@@ -26,6 +27,7 @@ import com.composetemplate.core.navigation.resource.resourceDetailsScreen
 import com.composetemplate.core.navigation.resource.resourcesGraph
 import com.composetemplate.core.navigation.sizeguide.navigateToSizeGuide
 import com.composetemplate.core.navigation.sizeguide.sizeGuideScreen
+import com.composetemplate.core.navigation.wakaf.wakafScreen
 import com.composetemplate.core.navigation.wishlist.navigateToWishlist
 import com.composetemplate.core.navigation.wishlist.wishlistScreen
 
@@ -37,6 +39,13 @@ fun AppNavHost(
     modifier: Modifier = Modifier,
     startDestination: String = loginNavigationRoute
 ) {
+    val navigateToHomeClearingLogin: () -> Unit = {
+        navController.navigate(homeNavigationRoute) {
+            popUpTo(loginNavigationRoute) { inclusive = true }
+            launchSingleTop = true
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -46,19 +55,18 @@ fun AppNavHost(
             onProductClick = { productId ->
                 navController.navigateToProductDetail(productId)
             },
-            onCartClick = {
-                navController.navigateToCart()
-            },
-            onWishlistClick = {
-                navController.navigateToWishlist()
+            onCartClick = { navController.navigateToCart() },
+            onWishlistClick = { navController.navigateToWishlist() },
+            onAccountClick = {
+                navController.navigate(com.composetemplate.core.navigation.account.accountNavigationRoute)
             }
         )
         loginScreen(
-            navigateToHome = { navController.navigateToHome() },
+            navigateToHome = navigateToHomeClearingLogin,
             navigateToRegister = { navController.navigateToRegister() }
         )
         registerScreen(
-            onRegisterSuccess = { navController.navigateToHome() },
+            onRegisterSuccess = navigateToHomeClearingLogin,
             onBackClick = onBackClick
         )
         productDetailScreen(
@@ -74,7 +82,7 @@ fun AppNavHost(
             onPaymentUrl = { url -> navController.navigateToPaymentWebView(url) }
         )
         paymentWebViewScreen(onBack = {
-            navController.popBackStack(route = "home_route", inclusive = false)
+            navController.popBackStack(route = homeNavigationRoute, inclusive = false)
         })
         ordersScreen(onOrderClick = { orderId ->
             navController.navigateToOrderDetail(orderId)
@@ -84,6 +92,17 @@ fun AppNavHost(
             navController.navigateToProductDetail(productId)
         })
         sizeGuideScreen(onBackClick = onBackClick)
+        wakafScreen()
+        accountScreen(
+            onLoggedOut = {
+                navController.navigate(loginNavigationRoute) {
+                    popUpTo(0) { inclusive = true }
+                }
+            },
+            onCartClick = { navController.navigateToCart() },
+            onWishlistClick = { navController.navigateToWishlist() },
+            onOrdersClick = { navController.navigate(com.composetemplate.core.navigation.orders.ordersNavigationRoute) }
+        )
         resourcesGraph(
             navController = navController,
             onItemClick = { navController.navigateToResourceDetails(it) },

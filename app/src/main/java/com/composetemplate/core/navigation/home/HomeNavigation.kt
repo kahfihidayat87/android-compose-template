@@ -15,13 +15,15 @@ fun NavController.navigateToHome(navOptions: NavOptions? = null) {
 fun NavGraphBuilder.homeScreen(
     onProductClick: (Int) -> Unit,
     onCartClick: () -> Unit,
-    onWishlistClick: () -> Unit
+    onWishlistClick: () -> Unit,
+    onAccountClick: () -> Unit
 ) {
     composable(route = homeNavigationRoute) {
         HomeRoute(
             onProductClick = onProductClick,
             onCartClick = onCartClick,
-            onWishlistClick = onWishlistClick
+            onWishlistClick = onWishlistClick,
+            onAccountClick = onAccountClick
         )
     }
 }
