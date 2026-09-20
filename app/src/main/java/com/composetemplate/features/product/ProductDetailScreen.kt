@@ -70,7 +70,7 @@ internal fun ProductDetailRoute(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ProductDetailScreen(
     product: Product,
