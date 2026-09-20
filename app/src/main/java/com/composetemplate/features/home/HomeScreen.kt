@@ -1,6 +1,8 @@
+cat > app/src/main/java/com/composetemplate/features/home/HomeScreen.kt << 'EOF'
 package com.composetemplate.features.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -36,13 +38,13 @@ private val CATEGORIES = listOf(
 
 private fun imageUrl(path: String?): String? {
     if (path.isNullOrEmpty()) return null
-    val base = BuildConfig.API_URL.trimEnd('/')
-    return "$base$path"
+    return BuildConfig.API_URL.trimEnd('/') + path
 }
 
 @Composable
 fun HomeRoute(
     modifier: Modifier = Modifier,
+    onProductClick: (String) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val allProducts = viewModel.products.collectAsStateLifecycleAware().value
@@ -61,6 +63,7 @@ fun HomeRoute(
         products = filtered,
         selectedCategory = selectedCategory,
         onCategorySelected = viewModel::onCategorySelected,
+        onProductClick = onProductClick,
         modifier = modifier
     )
 }
@@ -70,6 +73,7 @@ fun HomeScreen(
     products: List<Product>,
     selectedCategory: String,
     onCategorySelected: (String) -> Unit,
+    onProductClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxSize()) {
@@ -121,7 +125,10 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(products) { product ->
-                    ProductCard(product = product)
+                    ProductCard(
+                        product = product,
+                        onClick = { onProductClick(product.id) }
+                    )
                 }
             }
         }
@@ -129,9 +136,11 @@ fun HomeScreen(
 }
 
 @Composable
-private fun ProductCard(product: Product) {
+private fun ProductCard(product: Product, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -153,16 +162,11 @@ private fun ProductCard(product: Product) {
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    Text(
-                        text = product.emoji ?: "S",
-                        fontSize = 64.sp
-                    )
+                    Text(product.emoji ?: "S", fontSize = 64.sp)
                 }
                 if (product.isNew) {
                     Surface(
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(8.dp),
+                        modifier = Modifier.align(Alignment.TopStart).padding(8.dp),
                         color = MaterialTheme.colorScheme.primary,
                         shape = RoundedCornerShape(8.dp)
                     ) {
@@ -178,37 +182,19 @@ private fun ProductCard(product: Product) {
             }
 
             Spacer(Modifier.height(8.dp))
-
-            Text(
-                text = product.name,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 2
-            )
-
+            Text(product.name, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 2)
             Spacer(Modifier.height(4.dp))
-
             Text(
                 text = formatRupiah(product.price),
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
-
             Spacer(Modifier.height(4.dp))
-
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "★ ${product.rating}",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Text("★ ${product.rating}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.width(6.dp))
-                Text(
-                    text = "(${product.reviews})",
-                    fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Text("(${product.reviews})", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -219,3 +205,4 @@ private fun formatRupiah(amount: Int): String {
     format.maximumFractionDigits = 0
     return format.format(amount).replace("Rp", "Rp ")
 }
+EOF

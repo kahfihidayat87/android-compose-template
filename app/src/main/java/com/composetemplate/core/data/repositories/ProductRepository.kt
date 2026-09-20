@@ -18,4 +18,13 @@ class ProductRepository @Inject constructor(
         }
         return response.products.map { it.toProduct() }
     }
+
+    suspend fun getProduct(id: String): Product {
+        val response = repoCall {
+            api.getProduct(id)
+        }
+        val product = response.product?.toProduct()
+            ?: throw IllegalStateException("Produk tidak ditemukan")
+        return product
+    }
 }

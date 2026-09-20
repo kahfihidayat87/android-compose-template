@@ -8,6 +8,8 @@ import com.composetemplate.core.navigation.home.homeScreen
 import com.composetemplate.core.navigation.home.navigateToHome
 import com.composetemplate.core.navigation.login.loginNavigationRoute
 import com.composetemplate.core.navigation.login.loginScreen
+import com.composetemplate.core.navigation.product.navigateToProductDetail
+import com.composetemplate.core.navigation.product.productDetailScreen
 import com.composetemplate.core.navigation.resource.navigateToResourceDetails
 import com.composetemplate.core.navigation.resource.resourceDetailsScreen
 import com.composetemplate.core.navigation.resource.resourcesGraph
@@ -25,13 +27,16 @@ fun AppNavHost(
         startDestination = startDestination,
         modifier = modifier,
     ) {
-        homeScreen()
+        homeScreen(onProductClick = { productId ->
+            navController.navigateToProductDetail(productId)
+        })
         loginScreen(navigateToHome = { navController.navigateToHome() })
+        productDetailScreen(onBackClick = onBackClick)
         resourcesGraph(
             navController = navController,
             onItemClick = { navController.navigateToResourceDetails(it) },
             nestedGraphs = {
-                resourceDetailsScreen(navController,onBackClick)
+                resourceDetailsScreen(navController, onBackClick)
             }
         )
     }

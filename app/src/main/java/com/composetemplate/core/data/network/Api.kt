@@ -1,6 +1,7 @@
 package com.composetemplate.core.data.network
 
 import com.composetemplate.core.data.network.dtos.PostDto
+import com.composetemplate.core.data.network.dtos.ProductDetailResponse
 import com.composetemplate.core.data.network.dtos.ProductsResponse
 import com.composetemplate.core.data.network.dtos.ResourceDetailsDto
 import com.composetemplate.core.data.network.dtos.ResourceDto
@@ -26,6 +27,9 @@ interface Api {
 
     @GET("api/products")
     suspend fun getProducts(): Response<ProductsResponse>
+
+    @GET("api/products/{id}")
+    suspend fun getProduct(@Path("id") id: String): Response<ProductDetailResponse>
 
     @GET("posts")
     suspend fun getPosts(): Response<List<PostDto>>
