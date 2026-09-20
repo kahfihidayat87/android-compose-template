@@ -1,4 +1,3 @@
-cat > app/src/main/java/com/composetemplate/features/home/HomeScreen.kt << 'EOF'
 package com.composetemplate.features.home
 
 import androidx.compose.foundation.background
@@ -205,4 +204,3 @@ private fun formatRupiah(amount: Int): String {
     format.maximumFractionDigits = 0
     return format.format(amount).replace("Rp", "Rp ")
 }
-EOF
