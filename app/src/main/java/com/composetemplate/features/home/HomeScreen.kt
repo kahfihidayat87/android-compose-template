@@ -2,6 +2,7 @@ package com.composetemplate.features.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -10,8 +11,10 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
@@ -30,16 +33,9 @@ import coil.compose.AsyncImage
 import com.composetemplate.BuildConfig
 import com.composetemplate.arch.extensions.collectAsStateLifecycleAware
 import com.composetemplate.core.domain.model.Product
+import com.composetemplate.features.theme.ThemeViewModel
 import java.text.NumberFormat
 import java.util.Locale
-
-private val FALLBACK_CATEGORIES = listOf(
-    "all" to "Semua",
-    "Slip-On" to "Slip-On",
-    "Sneakers" to "Sneakers",
-    "BARU" to "Baru",
-    "DISKON" to "Diskon"
-)
 
 private fun imageUrl(path: String?): String? {
     if (path.isNullOrEmpty()) return null
@@ -54,20 +50,21 @@ fun HomeRoute(
     onCartClick: () -> Unit = {},
     onWishlistClick: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
-    wishlistViewModel: com.composetemplate.features.wishlist.WishlistViewModel = hiltViewModel()
+    wishlistViewModel: com.composetemplate.features.wishlist.WishlistViewModel = hiltViewModel(),
+    themeViewModel: ThemeViewModel = hiltViewModel()
 ) {
     val allProducts = viewModel.products.collectAsStateLifecycleAware().value
     val dynamicCategories = viewModel.categories.collectAsStateLifecycleAware().value
     val selectedCategory = viewModel.selectedCategory.collectAsStateLifecycleAware().value
     val searchQuery = viewModel.searchQuery.collectAsStateLifecycleAware().value
     val wishlistIds = wishlistViewModel.items.collectAsStateLifecycleAware().value.map { it.id }.toSet()
+    val darkModePref = themeViewModel.darkMode.collectAsStateLifecycleAware().value
 
-    // Gabungkan kategori dinamis + default
+    val isDark = darkModePref ?: isSystemInDarkTheme()
+
     val categories = remember(dynamicCategories) {
         val dynamicList = dynamicCategories.map { it.name to it.name }
-        listOf("all" to "Semua") +
-            dynamicList +
-            listOf("BARU" to "Baru", "DISKON" to "Diskon")
+        listOf("all" to "Semua") + dynamicList + listOf("BARU" to "Baru", "DISKON" to "Diskon")
     }
 
     val filtered = remember(allProducts, selectedCategory, searchQuery) {
@@ -89,12 +86,14 @@ fun HomeRoute(
         selectedCategory = selectedCategory,
         searchQuery = searchQuery,
         wishlistIds = wishlistIds,
+        isDark = isDark,
         onCategorySelected = viewModel::onCategorySelected,
         onSearchChanged = viewModel::onSearchChanged,
         onProductClick = onProductClick,
         onCartClick = onCartClick,
         onWishlistClick = onWishlistClick,
         onToggleWishlist = { product -> wishlistViewModel.toggle(product) },
+        onToggleDarkMode = { themeViewModel.toggle(isDark) },
         modifier = modifier
     )
 }
@@ -106,12 +105,14 @@ fun HomeScreen(
     selectedCategory: String,
     searchQuery: String,
     wishlistIds: Set<Int>,
+    isDark: Boolean,
     onCategorySelected: (String) -> Unit,
     onSearchChanged: (String) -> Unit,
     onProductClick: (Int) -> Unit,
     onCartClick: () -> Unit,
     onWishlistClick: () -> Unit,
     onToggleWishlist: (Product) -> Unit,
+    onToggleDarkMode: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxSize()) {
@@ -132,6 +133,12 @@ fun HomeScreen(
                     text = "Sepatu lokal Muhammadiyah",
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            IconButton(onClick = onToggleDarkMode) {
+                Icon(
+                    imageVector = if (isDark) Icons.Default.LightMode else Icons.Default.DarkMode,
+                    contentDescription = "Dark mode"
                 )
             }
             IconButton(onClick = onWishlistClick) {
