@@ -50,7 +50,7 @@ android {
             dimension "default"
             applicationIdSuffix ".dev"
             manifestPlaceholders = [
-                    APP_NAME: "ComposeTemplateDev",
+                    APP_NAME: "Sepatumu",
                     env     : "staging"
             ]
             buildConfigField "String", "API_URL", "\"http://192.168.1.7:3000/\""

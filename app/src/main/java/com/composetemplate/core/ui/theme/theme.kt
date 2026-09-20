@@ -13,9 +13,14 @@ import com.composetemplate.core.ui.theme.Blue30
 import com.composetemplate.core.ui.theme.Blue40
 import com.composetemplate.core.ui.theme.Blue80
 import com.composetemplate.core.ui.theme.Blue90
+import com.composetemplate.core.ui.theme.BrandBlue10
+import com.composetemplate.core.ui.theme.BrandBlue20
+import com.composetemplate.core.ui.theme.BrandBlue40
+import com.composetemplate.core.ui.theme.BrandBlue80
+import com.composetemplate.core.ui.theme.BrandBlue90
+import com.composetemplate.core.ui.theme.BrandGray99
 import com.composetemplate.core.ui.theme.DarkPurpleGray10
 import com.composetemplate.core.ui.theme.DarkPurpleGray90
-import com.composetemplate.core.ui.theme.DarkPurpleGray99
 import com.composetemplate.core.ui.theme.Orange10
 import com.composetemplate.core.ui.theme.Orange20
 import com.composetemplate.core.ui.theme.Orange30
@@ -23,10 +28,7 @@ import com.composetemplate.core.ui.theme.Orange40
 import com.composetemplate.core.ui.theme.Orange80
 import com.composetemplate.core.ui.theme.Orange90
 import com.composetemplate.core.ui.theme.Purple10
-import com.composetemplate.core.ui.theme.Purple20
 import com.composetemplate.core.ui.theme.Purple30
-import com.composetemplate.core.ui.theme.Purple40
-import com.composetemplate.core.ui.theme.Purple80
 import com.composetemplate.core.ui.theme.Purple90
 import com.composetemplate.core.ui.theme.PurpleGray30
 import com.composetemplate.core.ui.theme.PurpleGray50
@@ -45,10 +47,10 @@ import com.composetemplate.core.ui.theme.Red90
  */
 @VisibleForTesting
 val LightColors = lightColorScheme(
-    primary = Purple40,
+    primary = BrandBlue40,
     onPrimary = Color.White,
-    primaryContainer = Purple90,
-    onPrimaryContainer = Purple10,
+    primaryContainer = BrandBlue90,
+    onPrimaryContainer = BrandBlue10,
     secondary = Orange40,
     onSecondary = Color.White,
     secondaryContainer = Orange90,
@@ -61,9 +63,9 @@ val LightColors = lightColorScheme(
     onError = Color.White,
     errorContainer = Red90,
     onErrorContainer = Red10,
-    background = DarkPurpleGray99,
+    background = BrandGray99,
     onBackground = DarkPurpleGray10,
-    surface = DarkPurpleGray99,
+    surface = BrandGray99,
     onSurface = DarkPurpleGray10,
     surfaceVariant = PurpleGray90,
     onSurfaceVariant = PurpleGray30,
@@ -75,10 +77,10 @@ val LightColors = lightColorScheme(
  */
 @VisibleForTesting
 val DarkColors = darkColorScheme(
-    primary = Purple80,
-    onPrimary = Purple20,
-    primaryContainer = Purple30,
-    onPrimaryContainer = Purple90,
+    primary = BrandBlue80,
+    onPrimary = BrandBlue20,
+    primaryContainer = BrandBlue40,
+    onPrimaryContainer = BrandBlue90,
     secondary = Orange80,
     onSecondary = Orange20,
     secondaryContainer = Orange30,

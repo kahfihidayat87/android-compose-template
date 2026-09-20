@@ -1,16 +1,16 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Theme.Androidtemplate" parent="Theme.AppCompat.DayNight.DarkActionBar">
-        <!-- Status bar color. -->
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
+        <item name="colorPrimary">@color/brand_blue</item>
+        <item name="colorAccent">@color/brand_blue</item>
     </style>
 
     <style name="Theme.Androidtemplate.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
         <item name="windowSplashScreenAnimationDuration">1000</item>
-        <item name="windowSplashScreenBackground">@color/white</item>
+        <item name="windowSplashScreenBackground">@color/brand_blue</item>
         <item name="postSplashScreenTheme">@style/Theme.Androidtemplate</item>
     </style>
 </resources>

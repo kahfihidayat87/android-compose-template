@@ -5,6 +5,14 @@ import androidx.compose.ui.graphics.Color
 /**
  * App colors.
  */
+// Sepatumu Brand Colors
+internal val BrandBlue10 = Color(0xFF001A41)
+internal val BrandBlue20 = Color(0xFF002E6E)
+internal val BrandBlue40 = Color(0xFF0066FF)
+internal val BrandBlue80 = Color(0xFFA8C8FF)
+internal val BrandBlue90 = Color(0xFFD6E4FF)
+internal val BrandBlue95 = Color(0xFFEBF1FF)
+internal val BrandGray99 = Color(0xFFFEFBFF)
 internal val Blue10 = Color(0xFF001F29)
 internal val Blue20 = Color(0xFF003544)
 internal val Blue30 = Color(0xFF004D61)

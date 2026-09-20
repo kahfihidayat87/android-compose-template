@@ -1,9 +1,9 @@
 <resources>
-    <string name="app_name">android-compose-template</string>
-    <string name="home">Home</string>
-    <string name="resources">Resources</string>
-    <string name="login">Login</string>
-    <string name="icon">Icon</string>
+    <string name="app_name">Sepatumu</string>
+    <string name="home">Beranda</string>
+    <string name="resources">Produk</string>
+    <string name="login">Masuk</string>
+    <string name="icon">Ikon</string>
     <string name="label">Label</string>
-    <string name="no_data_found">No Data Found</string>
+    <string name="no_data_found">Data tidak ditemukan</string>
 </resources>
