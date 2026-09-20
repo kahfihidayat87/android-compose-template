@@ -3,6 +3,7 @@ package com.composetemplate.core.navigation
 import com.composetemplate.R
 import com.composetemplate.core.navigation.home.homeNavigationRoute
 import com.composetemplate.core.navigation.login.loginNavigationRoute
+import com.composetemplate.core.navigation.orders.ordersNavigationRoute
 import com.composetemplate.core.navigation.resource.resourceDetailsNavigationRoute
 import com.composetemplate.core.navigation.resource.resourcesNavigationRoute
 import com.composetemplate.core.ui.AppIcons
@@ -31,6 +32,16 @@ enum class Destination(
         iconTextId = R.string.home,
         titleTextId = R.string.home,
         route = homeNavigationRoute
+    ),
+    ORDERS(
+        isTopLevelDestination = true,
+        isBottomBarTab = true,
+        isTopBarTab = true,
+        selectedIcon = Icon.DrawableResourceIcon(R.drawable.ic_orders),
+        unselectedIcon = Icon.DrawableResourceIcon(R.drawable.ic_orders_border),
+        iconTextId = R.string.resources,
+        titleTextId = R.string.resources,
+        route = ordersNavigationRoute
     ),
     RESOURCES(
         isTopLevelDestination = true,

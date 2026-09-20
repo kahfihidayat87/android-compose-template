@@ -4,6 +4,7 @@ import com.composetemplate.arch.data.Repository
 import com.composetemplate.arch.extensions.repoCall
 import com.composetemplate.core.data.network.Api
 import com.composetemplate.core.data.network.LoginRequest
+import com.composetemplate.core.data.network.RegisterRequest
 import com.composetemplate.core.data.network.dtos.toUser
 import com.composetemplate.core.data.network.responses.LoginResponse
 import com.composetemplate.core.data.storage.TokenManager
@@ -20,6 +21,16 @@ class UserRepository @Inject constructor(
     suspend fun login(email: String, password: String): User {
         val response: LoginResponse = repoCall {
             api.postLogin(LoginRequest(email, password))
+        }
+        val user = response.customer.toUser()
+        userPreferenceStore.add(user)
+        tokenManager.saveToken(response.token)
+        return user
+    }
+
+    suspend fun register(name: String, email: String, password: String, phone: String): User {
+        val response: LoginResponse = repoCall {
+            api.postRegister(RegisterRequest(name, email, password, phone))
         }
         val user = response.customer.toUser()
         userPreferenceStore.add(user)
