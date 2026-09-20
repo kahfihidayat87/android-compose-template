@@ -2,6 +2,7 @@ package com.composetemplate.injection.modules
 
 import com.composetemplate.BuildConfig
 import com.composetemplate.core.data.network.Api
+import com.composetemplate.core.data.network.AuthInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -20,11 +21,12 @@ class RestModule {
 
     @Provides
     @Singleton
-    fun provideHttpClient(): OkHttpClient {
+    fun provideHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
         val clientBuilder = OkHttpClient.Builder()
             .connectTimeout(45, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
+            .addInterceptor(authInterceptor)
 
         if (BuildConfig.DEBUG) {
             val logging = HttpLoggingInterceptor()

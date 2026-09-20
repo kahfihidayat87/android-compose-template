@@ -12,8 +12,14 @@ fun NavController.navigateToCart(navOptions: NavOptions? = null) {
     this.navigate(cartNavigationRoute, navOptions)
 }
 
-fun NavGraphBuilder.cartScreen(onBackClick: () -> Unit) {
+fun NavGraphBuilder.cartScreen(
+    onBackClick: () -> Unit,
+    onCheckoutClick: () -> Unit
+) {
     composable(route = cartNavigationRoute) {
-        CartRoute(onBackClick = onBackClick)
+        CartRoute(
+            onBackClick = onBackClick,
+            onCheckoutClick = onCheckoutClick
+        )
     }
 }

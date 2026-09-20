@@ -41,12 +41,14 @@ private fun formatRupiah(amount: Int): String {
 @Composable
 fun CartRoute(
     onBackClick: () -> Unit,
+    onCheckoutClick: () -> Unit,
     viewModel: CartViewModel = hiltViewModel()
 ) {
     val items = viewModel.items.collectAsStateLifecycleAware().value
     CartScreen(
         items = items,
         onBackClick = onBackClick,
+        onCheckoutClick = onCheckoutClick,
         onQuantityChange = viewModel::updateQuantity,
         onRemove = viewModel::remove,
     )
@@ -57,6 +59,7 @@ fun CartRoute(
 fun CartScreen(
     items: List<CartItem>,
     onBackClick: () -> Unit,
+    onCheckoutClick: () -> Unit,
     onQuantityChange: (String, Int) -> Unit,
     onRemove: (String) -> Unit,
 ) {
@@ -92,7 +95,7 @@ fun CartScreen(
                             )
                         }
                         Button(
-                            onClick = { },
+                            onClick = onCheckoutClick,
                             modifier = Modifier.height(52.dp)
                         ) {
                             Text("Checkout", fontWeight = FontWeight.Bold)

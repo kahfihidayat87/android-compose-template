@@ -6,6 +6,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.composetemplate.core.navigation.cart.cartScreen
 import com.composetemplate.core.navigation.cart.navigateToCart
+import com.composetemplate.core.navigation.checkout.checkoutScreen
+import com.composetemplate.core.navigation.checkout.navigateToCheckout
+import com.composetemplate.core.navigation.checkout.navigateToPaymentWebView
+import com.composetemplate.core.navigation.checkout.paymentWebViewScreen
 import com.composetemplate.core.navigation.home.homeScreen
 import com.composetemplate.core.navigation.home.navigateToHome
 import com.composetemplate.core.navigation.login.loginNavigationRoute
@@ -39,7 +43,17 @@ fun AppNavHost(
         )
         loginScreen(navigateToHome = { navController.navigateToHome() })
         productDetailScreen(onBackClick = onBackClick)
-        cartScreen(onBackClick = onBackClick)
+        cartScreen(
+            onBackClick = onBackClick,
+            onCheckoutClick = { navController.navigateToCheckout() }
+        )
+        checkoutScreen(
+            onBackClick = onBackClick,
+            onPaymentUrl = { url -> navController.navigateToPaymentWebView(url) }
+        )
+        paymentWebViewScreen(onBack = {
+            navController.popBackStack(route = "home_route", inclusive = false)
+        })
         resourcesGraph(
             navController = navController,
             onItemClick = { navController.navigateToResourceDetails(it) },
