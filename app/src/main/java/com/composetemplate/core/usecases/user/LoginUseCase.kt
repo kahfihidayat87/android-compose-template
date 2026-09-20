@@ -10,10 +10,8 @@ class LoginUseCase @Inject constructor(
     private val userRepository: UserRepository,
     @DefaultDispatcher private val coroutineDispatcher: CoroutineDispatcher
 ) {
-
     fun login(email: String, password: String) =
         useCaseFlow(coroutineDispatcher) {
             userRepository.login(email, password)
-            userRepository.getUser()
         }
 }

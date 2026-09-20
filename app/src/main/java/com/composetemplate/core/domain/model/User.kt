@@ -1,11 +1,7 @@
 package com.composetemplate.core.domain.model
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class User(
-    val email: String,
-    val firstName: String,
-    val lastName: String,
-    val avatar: String
+    val id: String,
+    val name: String,
+    val email: String
 )
