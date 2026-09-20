@@ -16,7 +16,8 @@ fun NavController.navigateToProductDetail(productId: Int) {
 }
 
 fun NavGraphBuilder.productDetailScreen(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onSizeGuideClick: () -> Unit
 ) {
     composable(
         route = productDetailNavigationRoute,
@@ -27,7 +28,8 @@ fun NavGraphBuilder.productDetailScreen(
         val productId = backStackEntry.arguments?.getString(productIdArg).orEmpty()
         ProductDetailRoute(
             productId = productId,
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
+            onSizeGuideClick = onSizeGuideClick
         )
     }
 }

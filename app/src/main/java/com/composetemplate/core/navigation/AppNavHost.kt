@@ -24,6 +24,8 @@ import com.composetemplate.core.navigation.product.productDetailScreen
 import com.composetemplate.core.navigation.resource.navigateToResourceDetails
 import com.composetemplate.core.navigation.resource.resourceDetailsScreen
 import com.composetemplate.core.navigation.resource.resourcesGraph
+import com.composetemplate.core.navigation.sizeguide.navigateToSizeGuide
+import com.composetemplate.core.navigation.sizeguide.sizeGuideScreen
 import com.composetemplate.core.navigation.wishlist.navigateToWishlist
 import com.composetemplate.core.navigation.wishlist.wishlistScreen
 
@@ -56,12 +58,13 @@ fun AppNavHost(
             navigateToRegister = { navController.navigateToRegister() }
         )
         registerScreen(
-            onRegisterSuccess = {
-                navController.navigateToHome()
-            },
+            onRegisterSuccess = { navController.navigateToHome() },
             onBackClick = onBackClick
         )
-        productDetailScreen(onBackClick = onBackClick)
+        productDetailScreen(
+            onBackClick = onBackClick,
+            onSizeGuideClick = { navController.navigateToSizeGuide() }
+        )
         cartScreen(
             onBackClick = onBackClick,
             onCheckoutClick = { navController.navigateToCheckout() }
@@ -80,6 +83,7 @@ fun AppNavHost(
         wishlistScreen(onProductClick = { productId ->
             navController.navigateToProductDetail(productId)
         })
+        sizeGuideScreen(onBackClick = onBackClick)
         resourcesGraph(
             navController = navController,
             onItemClick = { navController.navigateToResourceDetails(it) },

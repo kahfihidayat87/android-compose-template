@@ -1,5 +1,6 @@
 package com.composetemplate.core.data.network
 
+import com.composetemplate.core.data.network.dtos.CategoryDto
 import com.composetemplate.core.data.network.dtos.OrderCreateRequest
 import com.composetemplate.core.data.network.dtos.OrderDto
 import com.composetemplate.core.data.network.dtos.PaymentCreateRequest
@@ -55,6 +56,9 @@ interface Api {
     @GET("api/products/{id}")
     suspend fun getProduct(@Path("id") id: Int): Response<ProductDto>
 
+    @GET("api/categories")
+    suspend fun getCategories(): Response<List<CategoryDto>>
+
     @POST("api/shipping/rates")
     suspend fun postShippingRates(@Body body: ShippingRatesRequest): Response<ShippingRatesResponse>
 
@@ -75,8 +79,6 @@ interface Api {
         @Path("orderId") orderId: Int,
         @Body body: PaymentCreateRequest
     ): Response<PaymentCreateResponse>
-
-    // ----- Legacy endpoint (untuk fitur Post & Resource yang tidak dipakai) -----
 
     @GET("posts")
     suspend fun getPosts(): Response<List<PostDto>>

@@ -7,15 +7,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -25,7 +26,7 @@ import coil.compose.AsyncImage
 import com.composetemplate.BuildConfig
 import com.composetemplate.arch.extensions.collectAsStateLifecycleAware
 import com.composetemplate.core.domain.model.Product
-import kotlinx.coroutines.launch
+import com.composetemplate.core.util.WhatsAppHelper
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -45,6 +46,7 @@ private fun formatRupiah(amount: Int): String {
 internal fun ProductDetailRoute(
     productId: String,
     onBackClick: () -> Unit,
+    onSizeGuideClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: ProductDetailViewModel = hiltViewModel()
 ) {
@@ -54,8 +56,8 @@ internal fun ProductDetailRoute(
     val quantity = viewModel.quantity.collectAsStateLifecycleAware().value
     val added = viewModel.addedToCart.collectAsStateLifecycleAware().value
 
+    val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
     LaunchedEffect(id) {
         if (id != null) viewModel.load(id)
@@ -82,6 +84,15 @@ internal fun ProductDetailRoute(
                 onSizeSelected = viewModel::onSizeSelected,
                 onQuantityChanged = viewModel::onQuantityChanged,
                 onAddToCart = viewModel::addToCart,
+                onSizeGuideClick = onSizeGuideClick,
+                onShareClick = {
+                    WhatsAppHelper.shareProduct(
+                        context = context,
+                        productName = product.name,
+                        price = formatRupiah(product.price),
+                        productId = product.id
+                    )
+                },
                 modifier = modifier
             )
             SnackbarHost(
@@ -104,6 +115,8 @@ fun ProductDetailScreen(
     onSizeSelected: (Int) -> Unit,
     onQuantityChanged: (Int) -> Unit,
     onAddToCart: () -> Unit,
+    onSizeGuideClick: () -> Unit,
+    onShareClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -113,6 +126,11 @@ fun ProductDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onShareClick) {
+                        Icon(Icons.Default.Share, contentDescription = "Bagikan")
                     }
                 }
             )
@@ -174,7 +192,16 @@ fun ProductDetailScreen(
 
                 Spacer(Modifier.height(20.dp))
 
-                Text("Pilih Ukuran (EU)", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Pilih Ukuran (EU)", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                    TextButton(onClick = onSizeGuideClick) {
+                        Text("Panduan Ukuran", fontSize = 13.sp)
+                    }
+                }
                 Spacer(Modifier.height(8.dp))
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),

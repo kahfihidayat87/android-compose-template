@@ -10,6 +10,9 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -30,7 +33,7 @@ import com.composetemplate.core.domain.model.Product
 import java.text.NumberFormat
 import java.util.Locale
 
-private val CATEGORIES = listOf(
+private val FALLBACK_CATEGORIES = listOf(
     "all" to "Semua",
     "Slip-On" to "Slip-On",
     "Sneakers" to "Sneakers",
@@ -49,26 +52,49 @@ fun HomeRoute(
     modifier: Modifier = Modifier,
     onProductClick: (Int) -> Unit = {},
     onCartClick: () -> Unit = {},
-    viewModel: HomeViewModel = hiltViewModel()
+    onWishlistClick: () -> Unit = {},
+    viewModel: HomeViewModel = hiltViewModel(),
+    wishlistViewModel: com.composetemplate.features.wishlist.WishlistViewModel = hiltViewModel()
 ) {
     val allProducts = viewModel.products.collectAsStateLifecycleAware().value
+    val dynamicCategories = viewModel.categories.collectAsStateLifecycleAware().value
     val selectedCategory = viewModel.selectedCategory.collectAsStateLifecycleAware().value
+    val searchQuery = viewModel.searchQuery.collectAsStateLifecycleAware().value
+    val wishlistIds = wishlistViewModel.items.collectAsStateLifecycleAware().value.map { it.id }.toSet()
 
-    val filtered = remember(allProducts, selectedCategory) {
+    // Gabungkan kategori dinamis + default
+    val categories = remember(dynamicCategories) {
+        val dynamicList = dynamicCategories.map { it.name to it.name }
+        listOf("all" to "Semua") +
+            dynamicList +
+            listOf("BARU" to "Baru", "DISKON" to "Diskon")
+    }
+
+    val filtered = remember(allProducts, selectedCategory, searchQuery) {
+        var result = allProducts
+        if (searchQuery.isNotBlank()) {
+            result = result.filter { it.name.contains(searchQuery, ignoreCase = true) }
+        }
         when (selectedCategory) {
-            "all" -> allProducts
-            "BARU" -> allProducts.filter { it.badge == "BARU" }
-            "DISKON" -> allProducts.filter { it.badge == "DISKON" }
-            else -> allProducts.filter { it.category == selectedCategory }
+            "all" -> result
+            "BARU" -> result.filter { it.badge == "BARU" }
+            "DISKON" -> result.filter { it.badge == "DISKON" }
+            else -> result.filter { it.category == selectedCategory }
         }
     }
 
     HomeScreen(
         products = filtered,
+        categories = categories,
         selectedCategory = selectedCategory,
+        searchQuery = searchQuery,
+        wishlistIds = wishlistIds,
         onCategorySelected = viewModel::onCategorySelected,
+        onSearchChanged = viewModel::onSearchChanged,
         onProductClick = onProductClick,
         onCartClick = onCartClick,
+        onWishlistClick = onWishlistClick,
+        onToggleWishlist = { product -> wishlistViewModel.toggle(product) },
         modifier = modifier
     )
 }
@@ -76,10 +102,16 @@ fun HomeRoute(
 @Composable
 fun HomeScreen(
     products: List<Product>,
+    categories: List<Pair<String, String>>,
     selectedCategory: String,
+    searchQuery: String,
+    wishlistIds: Set<Int>,
     onCategorySelected: (String) -> Unit,
+    onSearchChanged: (String) -> Unit,
     onProductClick: (Int) -> Unit,
     onCartClick: () -> Unit,
+    onWishlistClick: () -> Unit,
+    onToggleWishlist: (Product) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxSize()) {
@@ -102,19 +134,33 @@ fun HomeScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+            IconButton(onClick = onWishlistClick) {
+                Icon(Icons.Default.FavoriteBorder, contentDescription = "Wishlist")
+            }
             IconButton(onClick = onCartClick) {
-                Icon(
-                    imageVector = Icons.Default.ShoppingCart,
-                    contentDescription = "Keranjang"
-                )
+                Icon(Icons.Default.ShoppingCart, contentDescription = "Keranjang")
             }
         }
+
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = onSearchChanged,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            placeholder = { Text("Cari sepatu...") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp)
+        )
+
+        Spacer(Modifier.height(12.dp))
 
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(CATEGORIES) { (key, label) ->
+            items(categories) { (key, label) ->
                 FilterChip(
                     selected = selectedCategory == key,
                     onClick = { onCategorySelected(key) },
@@ -130,7 +176,11 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator()
+                if (searchQuery.isNotBlank()) {
+                    Text("Tidak ada hasil untuk \"$searchQuery\"")
+                } else {
+                    CircularProgressIndicator()
+                }
             }
         } else {
             LazyVerticalGrid(
@@ -142,7 +192,9 @@ fun HomeScreen(
                 items(products, key = { it.id }) { product ->
                     ProductCard(
                         product = product,
-                        onClick = { onProductClick(product.id) }
+                        isWishlisted = wishlistIds.contains(product.id),
+                        onClick = { onProductClick(product.id) },
+                        onToggleWishlist = { onToggleWishlist(product) }
                     )
                 }
             }
@@ -151,7 +203,12 @@ fun HomeScreen(
 }
 
 @Composable
-private fun ProductCard(product: Product, onClick: () -> Unit) {
+private fun ProductCard(
+    product: Product,
+    isWishlisted: Boolean,
+    onClick: () -> Unit,
+    onToggleWishlist: () -> Unit,
+) {
     Card(
         modifier = Modifier.fillMaxWidth().clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
@@ -176,6 +233,17 @@ private fun ProductCard(product: Product, onClick: () -> Unit) {
                     )
                 } else {
                     Text("S", fontSize = 64.sp)
+                }
+                IconButton(
+                    onClick = onToggleWishlist,
+                    modifier = Modifier.align(Alignment.TopEnd).padding(4.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isWishlisted) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = "Wishlist",
+                        tint = if (isWishlisted) MaterialTheme.colorScheme.error
+                               else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
                 if (product.badge != null) {
                     Surface(
