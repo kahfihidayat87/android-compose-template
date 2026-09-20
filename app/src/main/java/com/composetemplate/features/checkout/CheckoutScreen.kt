@@ -1,8 +1,6 @@
 package com.composetemplate.features.checkout
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -97,18 +95,12 @@ fun CheckoutRoute(
                         )
                     }
                     Button(
-                        onClick = {
-                            if (methods.isEmpty()) {
-                                viewModel.createOrderAndPayment()
-                            } else {
-                                viewModel.createOrderAndPayment()
-                            }
-                        },
-                        enabled = !loading && items.isNotEmpty(),
+                        onClick = { viewModel.onPrimaryAction() },
+                        enabled = !loading && items.isNotEmpty() && viewModel.isPrimaryButtonEnabled(),
                         modifier = Modifier.height(52.dp)
                     ) {
                         Text(
-                            text = if (methods.isEmpty()) "Cek Ongkir" else "Bayar",
+                            text = if (loading) "Memproses..." else viewModel.getPrimaryButtonLabel(),
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -166,7 +158,9 @@ fun CheckoutRoute(
                 rates.forEach { rate ->
                     RateRow(
                         rate = rate,
-                        selected = selectedRate?.let { it.courierCode == rate.courierCode && it.serviceCode == rate.serviceCode } == true,
+                        selected = selectedRate?.let {
+                            it.courierCode == rate.courierCode && it.serviceCode == rate.serviceCode
+                        } == true,
                         onClick = { viewModel.selectRate(rate) }
                     )
                 }
@@ -204,9 +198,8 @@ fun CheckoutRoute(
                         }
                     }
                 }
+                Spacer(Modifier.height(20.dp))
             }
-
-            Spacer(Modifier.height(20.dp))
 
             Card(
                 shape = RoundedCornerShape(12.dp),

@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Sepatumu</string>
     <string name="home">Beranda</string>
+    <string name="orders">Pesanan</string>
     <string name="resources">Produk</string>
     <string name="login">Masuk</string>
     <string name="icon">Ikon</string>

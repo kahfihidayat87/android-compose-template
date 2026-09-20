@@ -39,8 +39,8 @@ enum class Destination(
         isTopBarTab = true,
         selectedIcon = Icon.DrawableResourceIcon(R.drawable.ic_orders),
         unselectedIcon = Icon.DrawableResourceIcon(R.drawable.ic_orders_border),
-        iconTextId = R.string.resources,
-        titleTextId = R.string.resources,
+        iconTextId = R.string.orders,
+        titleTextId = R.string.orders,
         route = ordersNavigationRoute
     ),
     RESOURCES(
