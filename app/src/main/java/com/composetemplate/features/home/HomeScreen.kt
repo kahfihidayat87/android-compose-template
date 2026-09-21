@@ -15,7 +15,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
@@ -184,7 +183,7 @@ fun HomeScreen(
                 )
             }
             IconButton(onClick = onChatAdmin) {
-                Icon(Icons.Default.Chat, contentDescription = "Chat Admin")
+                Text(text = "💬", fontSize = 20.sp)
             }
             IconButton(onClick = onToggleDarkMode) {
                 Text(text = if (isDark) "☀️" else "🌙", fontSize = 20.sp)
