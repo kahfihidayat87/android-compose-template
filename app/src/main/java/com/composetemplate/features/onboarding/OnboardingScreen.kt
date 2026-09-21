@@ -2,8 +2,8 @@ package com.composetemplate.features.onboarding
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -48,20 +48,18 @@ private val PAGES = listOf(
 
 @Composable
 fun OnboardingScreen(onFinish: () -> Unit) {
-    val pagerState = rememberPagerState(pageCount = { PAGES.size })
+    val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
-    val isLastPage = pagerState.currentPage == PAGES.size - 1
+    val currentPage = listState.firstVisibleItemIndex
+    val isLastPage = currentPage == PAGES.size - 1
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Skip button di atas kanan
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             horizontalArrangement = Arrangement.End
         ) {
             TextButton(onClick = onFinish) {
@@ -69,53 +67,52 @@ fun OnboardingScreen(onFinish: () -> Unit) {
             }
         }
 
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-        ) { pageIndex ->
-            val page = PAGES[pageIndex]
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = page.emoji,
-                    fontSize = 96.sp
-                )
-                Spacer(Modifier.height(32.dp))
-                Text(
-                    text = page.title,
-                    fontSize = 26.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    textAlign = TextAlign.Center
-                )
-                Spacer(Modifier.height(16.dp))
-                Text(
-                    text = page.description,
-                    fontSize = 14.sp,
-                    lineHeight = 22.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
-                )
+        LazyRow(
+            state = listState,
+            modifier = Modifier.fillMaxWidth().weight(1f)
+        ) {
+            items(PAGES.size) { index ->
+                val page = PAGES[index]
+                Box(
+                    modifier = Modifier
+                        .fillParentMaxWidth()
+                        .fillParentMaxHeight(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        modifier = Modifier.padding(horizontal = 32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(text = page.emoji, fontSize = 96.sp)
+                        Spacer(Modifier.height(32.dp))
+                        Text(
+                            text = page.title,
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(Modifier.height(16.dp))
+                        Text(
+                            text = page.description,
+                            fontSize = 14.sp,
+                            lineHeight = 22.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
             }
         }
 
-        // Indicator dots
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
             repeat(PAGES.size) { index ->
-                val selected = pagerState.currentPage == index
+                val selected = currentPage == index
                 Box(
                     modifier = Modifier
                         .padding(horizontal = 4.dp)
@@ -129,11 +126,8 @@ fun OnboardingScreen(onFinish: () -> Unit) {
             }
         }
 
-        // Tombol Next / Selesai
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp)
+            modifier = Modifier.fillMaxWidth().padding(24.dp)
         ) {
             Button(
                 onClick = {
@@ -141,13 +135,11 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                         onFinish()
                     } else {
                         scope.launch {
-                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                            listState.animateScrollToItem(currentPage + 1)
                         }
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
+                modifier = Modifier.fillMaxWidth().height(52.dp)
             ) {
                 Text(
                     text = if (isLastPage) "Mulai Belanja" else "Lanjut",

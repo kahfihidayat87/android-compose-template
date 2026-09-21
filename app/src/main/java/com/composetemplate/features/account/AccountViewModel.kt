@@ -30,19 +30,23 @@ class AccountViewModel @Inject constructor(
 
     private fun loadUser() {
         viewModelScope.launch {
-            val users = userPreferenceStore.getAll()
-            _user.value = users.lastOrNull()
+            try {
+                val users = userPreferenceStore.getAll()
+                _user.value = users.lastOrNull()
+            } catch (e: Throwable) {
+                _user.value = null
+            }
         }
     }
 
-    fun refresh() {
-        loadUser()
-    }
+    fun refresh() = loadUser()
 
     fun logout() {
         viewModelScope.launch {
-            userPreferenceStore.clear()
-            userRepository.logout()
+            try {
+                userPreferenceStore.clear()
+                userRepository.logout()
+            } catch (e: Throwable) { }
             _loggedOut.value = true
         }
     }
