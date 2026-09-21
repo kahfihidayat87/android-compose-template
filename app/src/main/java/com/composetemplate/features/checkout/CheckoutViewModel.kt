@@ -8,6 +8,7 @@ import com.composetemplate.core.data.network.dtos.OrderCreateRequest
 import com.composetemplate.core.data.network.dtos.OrderItemRequest
 import com.composetemplate.core.data.network.dtos.PaymentMethodDto
 import com.composetemplate.core.data.repositories.CartRepository
+import com.composetemplate.core.data.repositories.CouponRepository
 import com.composetemplate.core.data.repositories.OrderRepository
 import com.composetemplate.core.data.repositories.PaymentRepository
 import com.composetemplate.core.data.repositories.ShippingRepository
@@ -25,6 +26,7 @@ class CheckoutViewModel @Inject constructor(
     private val shippingRepository: ShippingRepository,
     private val orderRepository: OrderRepository,
     private val paymentRepository: PaymentRepository,
+    private val couponRepository: CouponRepository,
 ) : ViewModel() {
 
     enum class Step { ADDRESS, RATES, PAYMENT }
@@ -60,35 +62,80 @@ class CheckoutViewModel @Inject constructor(
     private val _paymentUrl = MutableStateFlow<String?>(null)
     val paymentUrl: StateFlow<String?> = _paymentUrl.asStateFlow()
 
-    // Order yang sedang diproses (dibuat setelah rates dipilih)
+    // Kupon
+    private val _couponInput = MutableStateFlow("")
+    val couponInput: StateFlow<String> = _couponInput.asStateFlow()
+
+    private val _appliedCoupon = MutableStateFlow<String?>(null)
+    val appliedCoupon: StateFlow<String?> = _appliedCoupon.asStateFlow()
+
+    private val _discount = MutableStateFlow(0)
+    val discount: StateFlow<Int> = _discount.asStateFlow()
+
     private var currentOrderId: Int? = null
 
     val items = cartRepository.items
-    val totalItems: Int get() = cartRepository.totalItems
-    val totalPrice: Int get() = cartRepository.totalPrice
 
     fun onName(v: String) { _form.value = _form.value.copy(name = v) }
     fun onPhone(v: String) { _form.value = _form.value.copy(phone = v) }
     fun onAddress(v: String) { _form.value = _form.value.copy(address = v) }
     fun onPostalCode(v: String) { _form.value = _form.value.copy(postalCode = v.filter { it.isDigit() }.take(5)) }
+    fun onCouponInput(v: String) { _couponInput.value = v.uppercase() }
 
     fun clearError() { _error.value = null }
     fun consumePaymentUrl() { _paymentUrl.value = null }
 
     fun isAddressValid(): Boolean {
         val f = _form.value
-        return f.name.isNotBlank() &&
-               f.phone.isNotBlank() &&
-               f.address.isNotBlank() &&
-               f.postalCode.length == 5
+        return f.name.isNotBlank() && f.phone.isNotBlank() &&
+               f.address.isNotBlank() && f.postalCode.length == 5
     }
 
-    fun currentStep(): Step {
-        return when {
-            _rates.value.isEmpty() -> Step.ADDRESS
-            _paymentMethods.value.isEmpty() -> Step.RATES
-            else -> Step.PAYMENT
+    fun currentStep(): Step = when {
+        _rates.value.isEmpty() -> Step.ADDRESS
+        _paymentMethods.value.isEmpty() -> Step.RATES
+        else -> Step.PAYMENT
+    }
+
+    fun applyCoupon() {
+        val code = _couponInput.value.trim()
+        if (code.isEmpty()) {
+            _error.value = "Masukkan kode kupon"
+            return
         }
+        val subtotal = cartRepository.totalPrice
+        if (subtotal <= 0) {
+            _error.value = "Keranjang kosong"
+            return
+        }
+
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+            try {
+                val result = couponRepository.validate(code, subtotal)
+                if (result.valid) {
+                    _appliedCoupon.value = result.code
+                    _discount.value = result.discount
+                } else {
+                    _error.value = result.error ?: "Kode tidak valid"
+                    _appliedCoupon.value = null
+                    _discount.value = 0
+                }
+            } catch (e: Exception) {
+                _error.value = "Gagal validasi kupon: ${e.message}"
+                _appliedCoupon.value = null
+                _discount.value = 0
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun removeCoupon() {
+        _couponInput.value = ""
+        _appliedCoupon.value = null
+        _discount.value = 0
     }
 
     fun checkRates() {
@@ -123,34 +170,19 @@ class CheckoutViewModel @Inject constructor(
         }
     }
 
-    fun selectRate(rate: ShippingRate) {
-        _selectedRate.value = rate
-    }
+    fun selectRate(rate: ShippingRate) { _selectedRate.value = rate }
+    fun selectMethod(code: String) { _selectedMethod.value = code }
 
-    fun selectMethod(code: String) {
-        _selectedMethod.value = code
-    }
-
-    /**
-     * Dipanggil saat user tap tombol utama.
-     * Otomatis pilih aksi berdasarkan step saat ini.
-     */
     fun onPrimaryAction() {
         when (currentStep()) {
             Step.ADDRESS -> checkRates()
             Step.RATES -> {
-                if (_selectedRate.value == null) {
-                    _error.value = "Pilih kurir pengiriman dulu."
-                } else {
-                    submitOrderAndFetchMethods()
-                }
+                if (_selectedRate.value == null) _error.value = "Pilih kurir pengiriman dulu."
+                else submitOrderAndFetchMethods()
             }
             Step.PAYMENT -> {
-                if (_selectedMethod.value.isNullOrEmpty()) {
-                    _error.value = "Pilih metode pembayaran dulu."
-                } else {
-                    createPayment()
-                }
+                if (_selectedMethod.value.isNullOrEmpty()) _error.value = "Pilih metode pembayaran dulu."
+                else createPayment()
             }
         }
     }
@@ -166,26 +198,20 @@ class CheckoutViewModel @Inject constructor(
             try {
                 val order = orderRepository.createOrder(
                     OrderCreateRequest(
-                        items = cartItems.map {
-                            OrderItemRequest(productId = it.productId, qty = it.quantity, size = it.size)
-                        },
+                        items = cartItems.map { OrderItemRequest(productId = it.productId, qty = it.quantity, size = it.size) },
                         shippingAddress = "${f.name}\n${f.address}",
                         shippingPhone = f.phone,
                         shippingPostalCode = f.postalCode,
-                        courier = CourierRequest(
-                            courierCode = courier.courierCode,
-                            serviceCode = courier.serviceCode,
-                        ),
+                        courier = CourierRequest(courier.courierCode, courier.serviceCode),
+                        couponCode = _appliedCoupon.value,
                     )
                 )
                 currentOrderId = order.id
-
                 val methods = paymentRepository.getMethods(order.id)
-                if (methods.isEmpty()) {
-                    _error.value = "Tidak ada metode pembayaran tersedia. Hubungi admin."
-                } else {
+                if (methods.isEmpty()) _error.value = "Tidak ada metode pembayaran tersedia. Hubungi admin."
+                else {
                     _paymentMethods.value = methods
-                    _selectedMethod.value = methods.first().code
+                    _selectedMethod.value = methods.first().effectiveCode
                 }
             } catch (e: Exception) {
                 _error.value = "Gagal buat pesanan: ${e.message}"
@@ -196,19 +222,13 @@ class CheckoutViewModel @Inject constructor(
     }
 
     private fun createPayment() {
-        val orderId = currentOrderId
-        val method = _selectedMethod.value
-        if (orderId == null || method.isNullOrEmpty()) {
-            _error.value = "Data pesanan tidak lengkap. Coba ulang dari awal."
-            return
-        }
-
+        val orderId = currentOrderId ?: return
+        val method = _selectedMethod.value ?: return
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
             try {
-                val url = paymentRepository.createPayment(orderId, method)
-                _paymentUrl.value = url
+                _paymentUrl.value = paymentRepository.createPayment(orderId, method)
                 cartRepository.clear()
             } catch (e: Exception) {
                 _error.value = "Gagal buat pembayaran: ${e.message}"
@@ -218,19 +238,15 @@ class CheckoutViewModel @Inject constructor(
         }
     }
 
-    fun getPrimaryButtonLabel(): String {
-        return when (currentStep()) {
-            Step.ADDRESS -> "Cek Ongkir"
-            Step.RATES -> if (_selectedRate.value == null) "Pilih Kurir Dulu" else "Lanjut Bayar"
-            Step.PAYMENT -> "Bayar Sekarang"
-        }
+    fun getPrimaryButtonLabel(): String = when (currentStep()) {
+        Step.ADDRESS -> "Cek Ongkir"
+        Step.RATES -> if (_selectedRate.value == null) "Pilih Kurir Dulu" else "Lanjut Bayar"
+        Step.PAYMENT -> "Bayar Sekarang"
     }
 
-    fun isPrimaryButtonEnabled(): Boolean {
-        return when (currentStep()) {
-            Step.ADDRESS -> isAddressValid()
-            Step.RATES -> _selectedRate.value != null
-            Step.PAYMENT -> !_selectedMethod.value.isNullOrEmpty()
-        }
+    fun isPrimaryButtonEnabled(): Boolean = when (currentStep()) {
+        Step.ADDRESS -> isAddressValid()
+        Step.RATES -> _selectedRate.value != null
+        Step.PAYMENT -> !_selectedMethod.value.isNullOrEmpty()
     }
 }

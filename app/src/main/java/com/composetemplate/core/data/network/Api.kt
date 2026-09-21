@@ -1,6 +1,8 @@
 package com.composetemplate.core.data.network
 
 import com.composetemplate.core.data.network.dtos.CategoryDto
+import com.composetemplate.core.data.network.dtos.CouponValidateRequest
+import com.composetemplate.core.data.network.dtos.CouponValidateResponse
 import com.composetemplate.core.data.network.dtos.OrderCreateRequest
 import com.composetemplate.core.data.network.dtos.OrderDto
 import com.composetemplate.core.data.network.dtos.PaymentCreateRequest
@@ -21,27 +23,10 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.Url
 
-data class LoginRequest(
-    val email: String,
-    val password: String
-)
-
-data class RegisterRequest(
-    val name: String,
-    val email: String,
-    val password: String,
-    val phone: String
-)
-
-data class ShippingItemRequest(
-    val productId: Int,
-    val quantity: Int
-)
-
-data class ShippingRatesRequest(
-    val destinationPostalCode: String,
-    val items: List<ShippingItemRequest>
-)
+data class LoginRequest(val email: String, val password: String)
+data class RegisterRequest(val name: String, val email: String, val password: String, val phone: String)
+data class ShippingItemRequest(val productId: Int, val quantity: Int)
+data class ShippingRatesRequest(val destinationPostalCode: String, val items: List<ShippingItemRequest>)
 
 interface Api {
     @POST("api/customer/login")
@@ -58,6 +43,9 @@ interface Api {
 
     @GET("api/categories")
     suspend fun getCategories(): Response<List<CategoryDto>>
+
+    @POST("api/coupons/validate")
+    suspend fun validateCoupon(@Body body: CouponValidateRequest): Response<CouponValidateResponse>
 
     @POST("api/shipping/rates")
     suspend fun postShippingRates(@Body body: ShippingRatesRequest): Response<ShippingRatesResponse>
@@ -84,10 +72,7 @@ interface Api {
     suspend fun getPosts(): Response<List<PostDto>>
 
     @GET("pokemon")
-    suspend fun getResources(
-        @Query("offset") page: Int,
-        @Query("limit") limit: Int
-    ): Response<ResourcesResponse>
+    suspend fun getResources(@Query("offset") page: Int, @Query("limit") limit: Int): Response<ResourcesResponse>
 
     @GET
     suspend fun getResourcesDetails(@Url url: String): Response<ResourceDetailsDto>

@@ -15,10 +15,12 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -28,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -38,6 +41,7 @@ import com.composetemplate.BuildConfig
 import com.composetemplate.arch.extensions.collectAsStateLifecycleAware
 import com.composetemplate.core.domain.model.Product
 import com.composetemplate.core.domain.model.User
+import com.composetemplate.core.util.WhatsAppHelper
 import com.composetemplate.features.theme.ThemeViewModel
 import java.text.NumberFormat
 import java.util.Locale
@@ -69,6 +73,8 @@ fun HomeRoute(
     val user = accountViewModel.user.collectAsStateLifecycleAware().value
     val isDark = darkModePref ?: isSystemInDarkTheme()
 
+    val context = LocalContext.current
+
     val filtered = remember(allProducts, selectedCategory, searchQuery) {
         var result = allProducts
         if (searchQuery.isNotBlank()) {
@@ -99,6 +105,20 @@ fun HomeRoute(
         onAccountClick = onAccountClick,
         onToggleWishlist = { product -> wishlistViewModel.toggle(product) },
         onToggleDarkMode = { themeViewModel.toggle(isDark) },
+        onChatAdmin = {
+            WhatsAppHelper.chatAdmin(
+                context,
+                "Halo A-DHL, saya mau tanya tentang produk sepatu."
+            )
+        },
+        onShareProduct = { product ->
+            WhatsAppHelper.shareProduct(
+                context = context,
+                productName = product.name,
+                price = formatRupiah(product.price),
+                productId = product.id
+            )
+        },
         modifier = modifier
     )
 }
@@ -121,6 +141,8 @@ fun HomeScreen(
     onAccountClick: () -> Unit,
     onToggleWishlist: (Product) -> Unit,
     onToggleDarkMode: () -> Unit,
+    onChatAdmin: () -> Unit,
+    onShareProduct: (Product) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val bestSellers = remember(allProducts) {
@@ -160,6 +182,9 @@ fun HomeScreen(
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary
                 )
+            }
+            IconButton(onClick = onChatAdmin) {
+                Icon(Icons.Default.Chat, contentDescription = "Chat Admin")
             }
             IconButton(onClick = onToggleDarkMode) {
                 Text(text = if (isDark) "☀️" else "🌙", fontSize = 20.sp)
@@ -226,7 +251,8 @@ fun HomeScreen(
                             product = product,
                             isWishlisted = wishlistIds.contains(product.id),
                             onClick = { onProductClick(product.id) },
-                            onToggleWishlist = { onToggleWishlist(product) }
+                            onToggleWishlist = { onToggleWishlist(product) },
+                            onShareProduct = { onShareProduct(product) }
                         )
                     }
                 }
@@ -241,7 +267,8 @@ fun HomeScreen(
                     product = product,
                     isWishlisted = wishlistIds.contains(product.id),
                     onClick = { onProductClick(product.id) },
-                    onToggleWishlist = { onToggleWishlist(product) }
+                    onToggleWishlist = { onToggleWishlist(product) },
+                    onShareProduct = { onShareProduct(product) }
                 )
             }
 
@@ -402,6 +429,7 @@ private fun ProductCard(
     isWishlisted: Boolean,
     onClick: () -> Unit,
     onToggleWishlist: () -> Unit,
+    onShareProduct: () -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().clickable { onClick() },
@@ -427,6 +455,27 @@ private fun ProductCard(
                 } else {
                     Text("S", fontSize = 64.sp)
                 }
+
+                // Share button
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                    modifier = Modifier.align(Alignment.TopStart).padding(8.dp)
+                ) {
+                    IconButton(
+                        onClick = onShareProduct,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "Bagikan",
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+
+                // Wishlist button
                 Surface(
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
@@ -445,9 +494,13 @@ private fun ProductCard(
                         )
                     }
                 }
+
+                // Badge
                 if (product.badge != null) {
                     Surface(
-                        modifier = Modifier.align(Alignment.TopStart).padding(8.dp),
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(8.dp),
                         color = if (product.badge == "DISKON") MaterialTheme.colorScheme.error
                                 else MaterialTheme.colorScheme.primary,
                         shape = RoundedCornerShape(6.dp)

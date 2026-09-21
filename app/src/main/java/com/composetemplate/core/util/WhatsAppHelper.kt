@@ -30,7 +30,11 @@ object WhatsAppHelper {
     }
 
     fun shareProduct(context: Context, productName: String, price: String, productId: Int) {
-        val text = "Cek sepatu A-DHL ini:\n$productName\nHarga: $price\n\nhttps://sepatumu.id/produk/$productId"
+        val text = "Cek sepatu A-DHL ini:\n\n" +
+                "👟 $productName\n" +
+                "💰 $price\n\n" +
+                "🛒 Beli di: https://sepatumu.id/produk/$productId\n\n" +
+                "Sepatu lokal Muhammadiyah — kualitas premium, harga merakyat."
 
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
