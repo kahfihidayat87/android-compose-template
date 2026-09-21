@@ -8,9 +8,9 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Sepatumu Brand -->
-    <color name="brand_blue">#FF0066FF</color>
-    <color name="brand_blue_dark">#FF0047B3</color>
-    <color name="brand_blue_light">#FFE5F0FF</color>
-    <color name="brand_orange">#FFFF4D00</color>
+    <!-- A-DHL Muhammadiyah Green -->
+    <color name="brand_green">#FF006B3F</color>
+    <color name="brand_green_dark">#FF00391C</color>
+    <color name="brand_green_light">#FFC8FFDC</color>
+    <color name="brand_gold">#FFF2C94C</color>
 </resources>

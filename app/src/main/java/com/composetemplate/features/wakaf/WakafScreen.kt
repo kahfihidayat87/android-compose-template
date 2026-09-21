@@ -54,7 +54,7 @@ fun WakafScreen() {
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        text = "Salurkan sepatu untuk santri & dhuafa di panti asuhan binaan Muhammadiyah.",
+                        text = "Salurkan sepatu untuk santri & dhuafa di panti asuhan Muhammadiyah.",
                         fontSize = 13.sp,
                         color = Color.White.copy(alpha = 0.9f),
                         lineHeight = 18.sp

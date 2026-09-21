@@ -13,93 +13,92 @@ import com.composetemplate.core.ui.theme.Blue30
 import com.composetemplate.core.ui.theme.Blue40
 import com.composetemplate.core.ui.theme.Blue80
 import com.composetemplate.core.ui.theme.Blue90
-import com.composetemplate.core.ui.theme.BrandBlue10
-import com.composetemplate.core.ui.theme.BrandBlue20
-import com.composetemplate.core.ui.theme.BrandBlue40
-import com.composetemplate.core.ui.theme.BrandBlue80
-import com.composetemplate.core.ui.theme.BrandBlue90
-import com.composetemplate.core.ui.theme.BrandGray99
-import com.composetemplate.core.ui.theme.DarkPurpleGray10
-import com.composetemplate.core.ui.theme.DarkPurpleGray90
-import com.composetemplate.core.ui.theme.Orange10
-import com.composetemplate.core.ui.theme.Orange20
-import com.composetemplate.core.ui.theme.Orange30
-import com.composetemplate.core.ui.theme.Orange40
-import com.composetemplate.core.ui.theme.Orange80
-import com.composetemplate.core.ui.theme.Orange90
-import com.composetemplate.core.ui.theme.Purple10
-import com.composetemplate.core.ui.theme.Purple30
-import com.composetemplate.core.ui.theme.Purple90
-import com.composetemplate.core.ui.theme.PurpleGray30
-import com.composetemplate.core.ui.theme.PurpleGray50
-import com.composetemplate.core.ui.theme.PurpleGray60
-import com.composetemplate.core.ui.theme.PurpleGray80
-import com.composetemplate.core.ui.theme.PurpleGray90
-import com.composetemplate.core.ui.theme.Red10
-import com.composetemplate.core.ui.theme.Red20
-import com.composetemplate.core.ui.theme.Red30
-import com.composetemplate.core.ui.theme.Red40
-import com.composetemplate.core.ui.theme.Red80
-import com.composetemplate.core.ui.theme.Red90
+import com.composetemplate.core.ui.theme.MuhGold40
+import com.composetemplate.core.ui.theme.MuhGold80
+import com.composetemplate.core.ui.theme.MuhGold90
+import com.composetemplate.core.ui.theme.MuhGold10
+import com.composetemplate.core.ui.theme.MuhGray10
+import com.composetemplate.core.ui.theme.MuhGray20
+import com.composetemplate.core.ui.theme.MuhGray50
+import com.composetemplate.core.ui.theme.MuhGray80
+import com.composetemplate.core.ui.theme.MuhGray90
+import com.composetemplate.core.ui.theme.MuhGray99
+import com.composetemplate.core.ui.theme.MuhGreen10
+import com.composetemplate.core.ui.theme.MuhGreen20
+import com.composetemplate.core.ui.theme.MuhGreen40
+import com.composetemplate.core.ui.theme.MuhGreen80
+import com.composetemplate.core.ui.theme.MuhGreen90
+import com.composetemplate.core.ui.theme.ErrorRed10
+import com.composetemplate.core.ui.theme.ErrorRed40
+import com.composetemplate.core.ui.theme.ErrorRed80
+import com.composetemplate.core.ui.theme.ErrorRed90
 
 /**
- * Light default theme color scheme
+ * Light theme — Muhammadiyah Green
  */
 @VisibleForTesting
 val LightColors = lightColorScheme(
-    primary = BrandBlue40,
+    primary = MuhGreen40,
     onPrimary = Color.White,
-    primaryContainer = BrandBlue90,
-    onPrimaryContainer = BrandBlue10,
-    secondary = Orange40,
+    primaryContainer = MuhGreen90,
+    onPrimaryContainer = MuhGreen10,
+
+    secondary = MuhGold40,
     onSecondary = Color.White,
-    secondaryContainer = Orange90,
-    onSecondaryContainer = Orange10,
-    tertiary = Blue40,
-    onTertiary = Color.White,
-    tertiaryContainer = Blue90,
-    onTertiaryContainer = Blue10,
-    error = Red40,
+    secondaryContainer = MuhGold90,
+    onSecondaryContainer = MuhGold10,
+
+    tertiary = MuhGreen80,
+    onTertiary = MuhGreen20,
+    tertiaryContainer = MuhGreen90,
+    onTertiaryContainer = MuhGreen10,
+
+    error = ErrorRed40,
     onError = Color.White,
-    errorContainer = Red90,
-    onErrorContainer = Red10,
-    background = BrandGray99,
-    onBackground = DarkPurpleGray10,
-    surface = BrandGray99,
-    onSurface = DarkPurpleGray10,
-    surfaceVariant = PurpleGray90,
-    onSurfaceVariant = PurpleGray30,
-    outline = PurpleGray50
+    errorContainer = ErrorRed90,
+    onErrorContainer = ErrorRed10,
+
+    background = MuhGray99,
+    onBackground = MuhGray10,
+    surface = Color.White,
+    onSurface = MuhGray10,
+    surfaceVariant = MuhGray90,
+    onSurfaceVariant = MuhGray20,
+    outline = MuhGray50,
 )
 
 /**
- * Dark default theme color scheme
+ * Dark theme — Muhammadiyah Green
  */
 @VisibleForTesting
 val DarkColors = darkColorScheme(
-    primary = BrandBlue80,
-    onPrimary = BrandBlue20,
-    primaryContainer = BrandBlue40,
-    onPrimaryContainer = BrandBlue90,
-    secondary = Orange80,
-    onSecondary = Orange20,
-    secondaryContainer = Orange30,
-    onSecondaryContainer = Orange90,
+    primary = MuhGreen80,
+    onPrimary = MuhGreen20,
+    primaryContainer = MuhGreen40,
+    onPrimaryContainer = MuhGreen90,
+
+    secondary = MuhGold80,
+    onSecondary = MuhGold10,
+    secondaryContainer = MuhGold40,
+    onSecondaryContainer = MuhGold90,
+
     tertiary = Blue80,
     onTertiary = Blue20,
     tertiaryContainer = Blue30,
     onTertiaryContainer = Blue90,
-    error = Red80,
-    onError = Red20,
-    errorContainer = Red30,
-    onErrorContainer = Red90,
-    background = DarkPurpleGray10,
-    onBackground = DarkPurpleGray90,
-    surface = DarkPurpleGray10,
-    onSurface = DarkPurpleGray90,
-    surfaceVariant = PurpleGray30,
-    onSurfaceVariant = PurpleGray80,
-    outline = PurpleGray60
+
+    error = ErrorRed80,
+    onError = ErrorRed10,
+    errorContainer = ErrorRed40,
+    onErrorContainer = ErrorRed90,
+
+    background = MuhGray10,
+    onBackground = MuhGray90,
+    surface = MuhGray20,
+    onSurface = MuhGray90,
+    surfaceVariant = MuhGray20,
+    onSurfaceVariant = MuhGray80,
+    outline = MuhGray50,
 )
 
 @Composable
@@ -107,12 +106,7 @@ fun AppTheme(
     useDarkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable() () -> Unit
 ) {
-    val colors = if (!useDarkTheme) {
-        LightColors
-    } else {
-        DarkColors
-    }
-
+    val colors = if (!useDarkTheme) LightColors else DarkColors
     MaterialTheme(
         colorScheme = colors,
         typography = AppTypography,

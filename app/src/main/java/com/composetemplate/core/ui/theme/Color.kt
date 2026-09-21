@@ -2,24 +2,61 @@ package com.composetemplate.core.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-/**
- * App colors.
- */
-// Sepatumu Brand Colors
-internal val BrandBlue10 = Color(0xFF001A41)
-internal val BrandBlue20 = Color(0xFF002E6E)
-internal val BrandBlue40 = Color(0xFF0066FF)
-internal val BrandBlue80 = Color(0xFFA8C8FF)
-internal val BrandBlue90 = Color(0xFFD6E4FF)
-internal val BrandBlue95 = Color(0xFFEBF1FF)
-internal val BrandGray99 = Color(0xFFFEFBFF)
-internal val Blue10 = Color(0xFF001F29)
-internal val Blue20 = Color(0xFF003544)
-internal val Blue30 = Color(0xFF004D61)
-internal val Blue40 = Color(0xFF006781)
-internal val Blue80 = Color(0xFF5DD4FB)
-internal val Blue90 = Color(0xFFB5EAFF)
-internal val Blue95 = Color(0xFFDCF5FF)
+// ======================================================================
+// A-DHL — Muhammadiyah Green Theme
+// Warna dasar: hijau Muhammadiyah + aksen kuning emas
+// ======================================================================
+
+// Hijau Muhammadiyah (primary)
+internal val MuhGreen10 = Color(0xFF00210F)
+internal val MuhGreen20 = Color(0xFF00391C)
+internal val MuhGreen30 = Color(0xFF00532C)
+internal val MuhGreen40 = Color(0xFF006B3F)   // primary light
+internal val MuhGreen80 = Color(0xFF66DD9A)   // primary dark
+internal val MuhGreen90 = Color(0xFF9AF8C2)
+internal val MuhGreen95 = Color(0xFFC8FFDC)
+
+// Kuning Emas Muhammadiyah (secondary/accent)
+internal val MuhGold10 = Color(0xFF251A00)
+internal val MuhGold40 = Color(0xFFB58E00)
+internal val MuhGold80 = Color(0xFFFFDF9E)
+internal val MuhGold90 = Color(0xFFFFEFCC)
+
+// Netral (dengan hint hijau sangat lembut)
+internal val MuhGray10 = Color(0xFF191C1A)
+internal val MuhGray20 = Color(0xFF2D3230)
+internal val MuhGray40 = Color(0xFF444944)
+internal val MuhGray50 = Color(0xFF74796E)
+internal val MuhGray80 = Color(0xFFC3C9C0)
+internal val MuhGray90 = Color(0xFFDFE4DE)
+internal val MuhGray95 = Color(0xFFEEF2EC)
+internal val MuhGray99 = Color(0xFFF7FBF3)   // background putih dengan hint hijau
+
+// Error
+internal val ErrorRed10 = Color(0xFF410001)
+internal val ErrorRed40 = Color(0xFFBA1B1B)
+internal val ErrorRed80 = Color(0xFFFFB4A9)
+internal val ErrorRed90 = Color(0xFFFFDAD4)
+
+// ======================================================================
+// Legacy colors — dipakai beberapa screen lama
+// ======================================================================
+internal val Blue10 = Color(0xFF002111)
+internal val Blue20 = Color(0xFF003822)
+internal val Blue30 = Color(0xFF00532C)
+internal val Blue40 = Color(0xFF006B3F)
+internal val Blue80 = Color(0xFF66DD9A)
+internal val Blue90 = Color(0xFF9AF8C2)
+internal val Blue95 = Color(0xFFC8FFDC)
+
+internal val BrandBlue10 = MuhGreen10
+internal val BrandBlue20 = MuhGreen20
+internal val BrandBlue40 = MuhGreen40
+internal val BrandBlue80 = MuhGreen80
+internal val BrandBlue90 = MuhGreen90
+internal val BrandBlue95 = MuhGreen95
+internal val BrandGray99 = MuhGray99
+
 internal val DarkGreen10 = Color(0xFF0D1F12)
 internal val DarkGreen20 = Color(0xFF223526)
 internal val DarkGreen30 = Color(0xFF394B3C)
@@ -30,10 +67,10 @@ internal val DarkGreenGray10 = Color(0xFF1A1C1A)
 internal val DarkGreenGray90 = Color(0xFFE2E3DE)
 internal val DarkGreenGray95 = Color(0xFFF0F1EC)
 internal val DarkGreenGray99 = Color(0xFFFBFDF7)
-internal val DarkPurpleGray10 = Color(0xFF201A1B)
-internal val DarkPurpleGray90 = Color(0xFFECDFE0)
-internal val DarkPurpleGray95 = Color(0xFFFAEEEF)
-internal val DarkPurpleGray99 = Color(0xFFFCFCFC)
+internal val DarkPurpleGray10 = Color(0xFF1A1C1A)
+internal val DarkPurpleGray90 = Color(0xFFE2E3DE)
+internal val DarkPurpleGray95 = Color(0xFFF0F1EC)
+internal val DarkPurpleGray99 = Color(0xFFFBFDF7)
 internal val Green10 = Color(0xFF00210B)
 internal val Green20 = Color(0xFF003919)
 internal val Green30 = Color(0xFF005227)

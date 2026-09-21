@@ -227,7 +227,7 @@ fun CheckoutRoute(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text("🤝 Wakafkan Sepatu Ini", fontSize = 14.sp, fontWeight = FontWeight.Bold)
                                 Text(
-                                    "Salurkan sepatu ke panti asuhan binaan Muhammadiyah",
+                                    "Salurkan sepatu ke panti asuhan Muhammadiyah",
                                     fontSize = 11.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
