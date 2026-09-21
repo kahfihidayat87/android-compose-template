@@ -64,7 +64,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-private fun MainApp(activity: ComponentActivity) {
+private fun MainApp(activity: MainActivity) {
     val onboardingCompleted by activity.onboardingStore.completedFlow
         .collectAsState(initial = null)
 
