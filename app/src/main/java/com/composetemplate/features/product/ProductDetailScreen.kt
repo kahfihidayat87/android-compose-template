@@ -8,6 +8,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,6 +48,7 @@ internal fun ProductDetailRoute(
     productId: String,
     onBackClick: () -> Unit,
     onSizeGuideClick: () -> Unit = {},
+    onCartClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: ProductDetailViewModel = hiltViewModel()
 ) {
@@ -93,6 +95,7 @@ internal fun ProductDetailRoute(
                         productId = product.id
                     )
                 },
+                onCartClick = onCartClick,
                 modifier = modifier
             )
             SnackbarHost(
@@ -117,6 +120,7 @@ fun ProductDetailScreen(
     onAddToCart: () -> Unit,
     onSizeGuideClick: () -> Unit,
     onShareClick: () -> Unit,
+    onCartClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -129,6 +133,9 @@ fun ProductDetailScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onCartClick) {
+                        Icon(Icons.Default.ShoppingCart, contentDescription = "Keranjang")
+                    }
                     IconButton(onClick = onShareClick) {
                         Icon(Icons.Default.Share, contentDescription = "Bagikan")
                     }
@@ -271,6 +278,19 @@ fun ProductDetailScreen(
                         text = formatRupiah(product.price * quantity),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
+                    )
+                }
+                // Ikon keranjang kecil di samping tombol Tambah
+                OutlinedIconButton(
+                    onClick = onCartClick,
+                    modifier = Modifier
+                        .size(52.dp)
+                        .padding(end = 8.dp)
+                ) {
+                    Icon(
+                        Icons.Default.ShoppingCart,
+                        contentDescription = "Lihat Keranjang",
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
                 Button(

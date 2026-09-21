@@ -18,7 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -188,8 +188,8 @@ fun HomeScreen(
             IconButton(onClick = onToggleDarkMode) {
                 Text(text = if (isDark) "☀️" else "🌙", fontSize = 20.sp)
             }
-            IconButton(onClick = onAccountClick) {
-                Icon(Icons.Default.Settings, contentDescription = "Pengaturan")
+            IconButton(onClick = onCartClick) {
+                Icon(Icons.Default.ShoppingCart, contentDescription = "Keranjang")
             }
         }
 

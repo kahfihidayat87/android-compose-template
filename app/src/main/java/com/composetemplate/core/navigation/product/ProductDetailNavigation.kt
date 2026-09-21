@@ -17,7 +17,8 @@ fun NavController.navigateToProductDetail(productId: Int) {
 
 fun NavGraphBuilder.productDetailScreen(
     onBackClick: () -> Unit,
-    onSizeGuideClick: () -> Unit
+    onSizeGuideClick: () -> Unit,
+    onCartClick: () -> Unit
 ) {
     composable(
         route = productDetailNavigationRoute,
@@ -29,7 +30,8 @@ fun NavGraphBuilder.productDetailScreen(
         ProductDetailRoute(
             productId = productId,
             onBackClick = onBackClick,
-            onSizeGuideClick = onSizeGuideClick
+            onSizeGuideClick = onSizeGuideClick,
+            onCartClick = onCartClick
         )
     }
 }

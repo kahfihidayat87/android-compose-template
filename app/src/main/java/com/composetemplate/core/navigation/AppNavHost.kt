@@ -71,7 +71,8 @@ fun AppNavHost(
         )
         productDetailScreen(
             onBackClick = onBackClick,
-            onSizeGuideClick = { navController.navigateToSizeGuide() }
+            onSizeGuideClick = { navController.navigateToSizeGuide() },
+            onCartClick = { navController.navigateToCart() }
         )
         cartScreen(
             onBackClick = onBackClick,

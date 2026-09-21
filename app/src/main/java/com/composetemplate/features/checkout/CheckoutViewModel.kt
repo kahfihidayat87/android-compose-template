@@ -1,5 +1,6 @@
 package com.composetemplate.features.checkout
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.composetemplate.core.data.network.ShippingItemRequest
@@ -13,6 +14,7 @@ import com.composetemplate.core.data.repositories.OrderRepository
 import com.composetemplate.core.data.repositories.PaymentRepository
 import com.composetemplate.core.data.repositories.ShippingRepository
 import com.composetemplate.core.domain.model.ShippingRate
+import com.composetemplate.core.util.ErrorExtractor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,6 +30,10 @@ class CheckoutViewModel @Inject constructor(
     private val paymentRepository: PaymentRepository,
     private val couponRepository: CouponRepository,
 ) : ViewModel() {
+
+    companion object {
+        private const val TAG = "CheckoutVM"
+    }
 
     enum class Step { ADDRESS, RATES, PAYMENT }
 
@@ -62,7 +68,6 @@ class CheckoutViewModel @Inject constructor(
     private val _paymentUrl = MutableStateFlow<String?>(null)
     val paymentUrl: StateFlow<String?> = _paymentUrl.asStateFlow()
 
-    // Kupon
     private val _couponInput = MutableStateFlow("")
     val couponInput: StateFlow<String> = _couponInput.asStateFlow()
 
@@ -108,7 +113,6 @@ class CheckoutViewModel @Inject constructor(
             _error.value = "Keranjang kosong"
             return
         }
-
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
@@ -123,7 +127,8 @@ class CheckoutViewModel @Inject constructor(
                     _discount.value = 0
                 }
             } catch (e: Exception) {
-                _error.value = "Gagal validasi kupon: ${e.message}"
+                Log.e(TAG, "Coupon error", e)
+                _error.value = "Gagal validasi kupon: ${ErrorExtractor.extract(e)}"
                 _appliedCoupon.value = null
                 _discount.value = 0
             } finally {
@@ -149,7 +154,6 @@ class CheckoutViewModel @Inject constructor(
             _error.value = "Keranjang kosong."
             return
         }
-
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
@@ -161,9 +165,10 @@ class CheckoutViewModel @Inject constructor(
                     items = cartItems.map { ShippingItemRequest(productId = it.productId, quantity = it.quantity) }
                 )
                 _rates.value = rates
-                if (rates.isEmpty()) _error.value = "Tidak ada layanan kurir tersedia untuk kode pos ini."
+                if (rates.isEmpty()) _error.value = "Tidak ada layanan kurir untuk kode pos ini."
             } catch (e: Exception) {
-                _error.value = "Gagal cek ongkir: ${e.message ?: "coba lagi"}"
+                Log.e(TAG, "Rates error", e)
+                _error.value = "Gagal cek ongkir: ${ErrorExtractor.extract(e)}"
             } finally {
                 _loading.value = false
             }
@@ -198,7 +203,9 @@ class CheckoutViewModel @Inject constructor(
             try {
                 val order = orderRepository.createOrder(
                     OrderCreateRequest(
-                        items = cartItems.map { OrderItemRequest(productId = it.productId, qty = it.quantity, size = it.size) },
+                        items = cartItems.map {
+                            OrderItemRequest(productId = it.productId, qty = it.quantity, size = it.size)
+                        },
                         shippingAddress = "${f.name}\n${f.address}",
                         shippingPhone = f.phone,
                         shippingPostalCode = f.postalCode,
@@ -214,7 +221,8 @@ class CheckoutViewModel @Inject constructor(
                     _selectedMethod.value = methods.first().effectiveCode
                 }
             } catch (e: Exception) {
-                _error.value = "Gagal buat pesanan: ${e.message}"
+                Log.e(TAG, "Create order error", e)
+                _error.value = ErrorExtractor.extract(e)
             } finally {
                 _loading.value = false
             }
@@ -222,16 +230,22 @@ class CheckoutViewModel @Inject constructor(
     }
 
     private fun createPayment() {
-        val orderId = currentOrderId ?: return
-        val method = _selectedMethod.value ?: return
+        val orderId = currentOrderId
+        val method = _selectedMethod.value
+        if (orderId == null || method.isNullOrEmpty()) {
+            _error.value = "Data pesanan tidak lengkap. Coba ulang dari awal."
+            return
+        }
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
             try {
-                _paymentUrl.value = paymentRepository.createPayment(orderId, method)
+                val url = paymentRepository.createPayment(orderId, method)
+                _paymentUrl.value = url
                 cartRepository.clear()
             } catch (e: Exception) {
-                _error.value = "Gagal buat pembayaran: ${e.message}"
+                Log.e(TAG, "Create payment error", e)
+                _error.value = "Gagal buat pembayaran: ${ErrorExtractor.extract(e)}"
             } finally {
                 _loading.value = false
             }
