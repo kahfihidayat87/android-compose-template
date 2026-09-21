@@ -15,43 +15,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.composetemplate.core.domain.model.OnboardingPage
 import kotlinx.coroutines.launch
 
-data class OnboardingPage(
-    val emoji: String,
-    val title: String,
-    val description: String,
-)
-
-private val PAGES = listOf(
-    OnboardingPage(
-        emoji = "👟",
-        title = "Sepatu Kanvas Lokal",
-        description = "A-DHL — sepatu kanvas breathable buatan warga Muhammadiyah Gunungkidul-Yogyakarta."
-    ),
-    OnboardingPage(
-        emoji = "✨",
-        title = "100% Original",
-        description = "Material pilihan, jahitan rapi, sol empuk anti-slip. Kualitas terjamin, harga merakyat mulai Rp149.000."
-    ),
-    OnboardingPage(
-        emoji = "🤝",
-        title = "Dukung Ekonomi Umat",
-        description = "Setiap pasang yang kamu beli turut menggerakkan roda ekonomi umat. Dari umat, oleh umat, untuk umat."
-    ),
-    OnboardingPage(
-        emoji = "🚚",
-        title = "Belanja Mudah",
-        description = "Pilih model, ukuran, bayar via VA/QRIS, dan lacak pengiriman real-time langsung dari aplikasi."
-    ),
-)
-
 @Composable
-fun OnboardingScreen(onFinish: () -> Unit) {
+fun OnboardingScreen(
+    pages: List<OnboardingPage>,
+    onFinish: () -> Unit
+) {
+    if (pages.isEmpty()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val currentPage = listState.firstVisibleItemIndex
-    val isLastPage = currentPage == PAGES.size - 1
+    val isLastPage = currentPage == pages.size - 1
 
     Column(
         modifier = Modifier
@@ -59,7 +46,9 @@ fun OnboardingScreen(onFinish: () -> Unit) {
             .background(MaterialTheme.colorScheme.background)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             horizontalArrangement = Arrangement.End
         ) {
             TextButton(onClick = onFinish) {
@@ -69,10 +58,12 @@ fun OnboardingScreen(onFinish: () -> Unit) {
 
         LazyRow(
             state = listState,
-            modifier = Modifier.fillMaxWidth().weight(1f)
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
         ) {
-            items(PAGES.size) { index ->
-                val page = PAGES[index]
+            items(pages.size) { index ->
+                val page = pages[index]
                 Box(
                     modifier = Modifier
                         .fillParentMaxWidth()
@@ -107,11 +98,13 @@ fun OnboardingScreen(onFinish: () -> Unit) {
         }
 
         Row(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            repeat(PAGES.size) { index ->
+            repeat(pages.size) { index ->
                 val selected = currentPage == index
                 Box(
                     modifier = Modifier
@@ -127,7 +120,9 @@ fun OnboardingScreen(onFinish: () -> Unit) {
         }
 
         Row(
-            modifier = Modifier.fillMaxWidth().padding(24.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp)
         ) {
             Button(
                 onClick = {
@@ -139,7 +134,9 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                         }
                     }
                 },
-                modifier = Modifier.fillMaxWidth().height(52.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
             ) {
                 Text(
                     text = if (isLastPage) "Mulai Belanja" else "Lanjut",

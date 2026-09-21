@@ -3,8 +3,10 @@ package com.composetemplate.core.data.network
 import com.composetemplate.core.data.network.dtos.CategoryDto
 import com.composetemplate.core.data.network.dtos.CouponValidateRequest
 import com.composetemplate.core.data.network.dtos.CouponValidateResponse
+import com.composetemplate.core.data.network.dtos.OnboardingResponse
 import com.composetemplate.core.data.network.dtos.OrderCreateRequest
 import com.composetemplate.core.data.network.dtos.OrderDto
+import com.composetemplate.core.data.network.dtos.PantiDto
 import com.composetemplate.core.data.network.dtos.PaymentCreateRequest
 import com.composetemplate.core.data.network.dtos.PaymentCreateResponse
 import com.composetemplate.core.data.network.dtos.PaymentMethodsResponse
@@ -35,6 +37,9 @@ interface Api {
     @POST("api/customer/register")
     suspend fun postRegister(@Body body: RegisterRequest): Response<LoginResponse>
 
+    @POST("api/customer/resend-verification")
+    suspend fun resendVerification(): Response<Map<String, String>>
+
     @GET("api/products")
     suspend fun getProducts(): Response<List<ProductDto>>
 
@@ -43,6 +48,12 @@ interface Api {
 
     @GET("api/categories")
     suspend fun getCategories(): Response<List<CategoryDto>>
+
+    @GET("api/onboarding")
+    suspend fun getOnboarding(): Response<OnboardingResponse>
+
+    @GET("api/panti")
+    suspend fun getPanti(): Response<List<PantiDto>>
 
     @POST("api/coupons/validate")
     suspend fun validateCoupon(@Body body: CouponValidateRequest): Response<CouponValidateResponse>

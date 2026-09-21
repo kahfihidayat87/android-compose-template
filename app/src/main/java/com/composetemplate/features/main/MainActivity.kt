@@ -28,6 +28,7 @@ import com.composetemplate.core.ui.rememberAppState
 import com.composetemplate.core.util.NotificationHelper
 import com.composetemplate.features.notification.OrderPollingViewModel
 import com.composetemplate.features.onboarding.OnboardingScreen
+import com.composetemplate.features.onboarding.OnboardingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -74,9 +75,9 @@ private fun MainApp(activity: MainActivity) {
     val systemDark = isSystemInDarkTheme()
     val isDark = darkModePref ?: systemDark
 
-    val scope = rememberCoroutineScope()
     val systemUiController = rememberSystemUiController()
 
+    // Polling notifikasi
     val pollingViewModel: OrderPollingViewModel = hiltViewModel()
     LaunchedEffect(Unit) {
         try {
@@ -93,17 +94,18 @@ private fun MainApp(activity: MainActivity) {
         AppBackground {
             when (onboardingCompleted) {
                 null -> { }
+
                 false -> {
+                    val onboardingViewModel: OnboardingViewModel = hiltViewModel()
+                    val pages by onboardingViewModel.pages.collectAsState()
                     OnboardingScreen(
+                        pages = pages,
                         onFinish = {
-                            scope.launch {
-                                try {
-                                    activity.onboardingStore.markCompleted()
-                                } catch (e: Throwable) { }
-                            }
+                            onboardingViewModel.markCompleted()
                         }
                     )
                 }
+
                 true -> {
                     AndroidTemplateApp(
                         appState = rememberAppState(
