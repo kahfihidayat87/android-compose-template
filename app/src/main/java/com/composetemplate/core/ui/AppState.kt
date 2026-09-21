@@ -55,10 +55,10 @@ class AppState(
                 currentDestinationAsState?.route?.contains(destination.route, ignoreCase = true) ?: false
             }
 
-    val shouldShowTopAppBar: Boolean
+        val shouldShowTopAppBar: Boolean
         @Composable get() {
-            val dest = currentDestination
-            return dest == null || dest.isTopBarTab.not() || dest == Destination.HOME
+            val dest = currentDestination ?: return false
+            return dest.isTopBarTab.not() || dest == Destination.HOME
         }
 
     val shouldShowBottomBar: Boolean
