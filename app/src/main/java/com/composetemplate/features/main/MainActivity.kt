@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -48,47 +49,67 @@ class MainActivity : ComponentActivity() {
         splashScreen.setKeepOnScreenCondition { false }
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        NotificationHelper.ensureChannel(this)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
+        try {
+            NotificationHelper.ensureChannel(this)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } catch (e: Throwable) { }
 
         setContent {
-            val onboardingCompleted by onboardingStore.completedFlow.collectAsState(initial = null)
-            val darkModePref by themePreferenceStore.darkModeFlow.collectAsState(initial = null)
-            val systemDark = isSystemInDarkTheme()
-            val isDark = darkModePref ?: systemDark
+            MainApp(activity = this@MainActivity)
+        }
+    }
+}
 
-            val scope = rememberCoroutineScope()
-            val systemUiController = rememberSystemUiController()
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+@Composable
+private fun MainApp(activity: ComponentActivity) {
+    val onboardingCompleted by activity.onboardingStore.completedFlow
+        .collectAsState(initial = null)
 
-            val pollingViewModel: OrderPollingViewModel = hiltViewModel()
-            LaunchedEffect(Unit) {
-                pollingViewModel.startPolling()
-            }
+    val darkModePref by activity.themePreferenceStore.darkModeFlow
+        .collectAsState(initial = null)
 
-            DisposableEffect(systemUiController, isDark) {
-                systemUiController.systemBarsDarkContentEnabled = !isDark
-                onDispose {}
-            }
+    val systemDark = isSystemInDarkTheme()
+    val isDark = darkModePref ?: systemDark
 
-            AppTheme(useDarkTheme = isDark) {
-                AppBackground {
-                    when (onboardingCompleted) {
-                        null -> { }
-                        false -> {
-                            OnboardingScreen(
-                                onFinish = { scope.launch { onboardingStore.markCompleted() } }
-                            )
+    val scope = rememberCoroutineScope()
+    val systemUiController = rememberSystemUiController()
+
+    val pollingViewModel: OrderPollingViewModel = hiltViewModel()
+    LaunchedEffect(Unit) {
+        try {
+            pollingViewModel.startPolling()
+        } catch (e: Throwable) { }
+    }
+
+    DisposableEffect(systemUiController, isDark) {
+        systemUiController.systemBarsDarkContentEnabled = !isDark
+        onDispose {}
+    }
+
+    AppTheme(useDarkTheme = isDark) {
+        AppBackground {
+            when (onboardingCompleted) {
+                null -> { }
+                false -> {
+                    OnboardingScreen(
+                        onFinish = {
+                            scope.launch {
+                                try {
+                                    activity.onboardingStore.markCompleted()
+                                } catch (e: Throwable) { }
+                            }
                         }
-                        else -> {
-                            AndroidTemplateApp(
-                                appState = rememberAppState(
-                                    windowSizeClass = calculateWindowSizeClass(this)
-                                )
-                            )
-                        }
-                    }
+                    )
+                }
+                true -> {
+                    AndroidTemplateApp(
+                        appState = rememberAppState(
+                            windowSizeClass = calculateWindowSizeClass(activity)
+                        )
+                    )
                 }
             }
         }
