@@ -3,6 +3,7 @@ package com.composetemplate.features.checkout
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -11,7 +12,10 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -48,6 +52,9 @@ fun CheckoutRoute(
     val couponInput = viewModel.couponInput.collectAsStateLifecycleAware().value
     val appliedCoupon = viewModel.appliedCoupon.collectAsStateLifecycleAware().value
     val discount = viewModel.discount.collectAsStateLifecycleAware().value
+    val wakafEnabled = viewModel.wakafEnabled.collectAsStateLifecycleAware().value
+    val pantiList = viewModel.pantiList.collectAsStateLifecycleAware().value
+    val selectedPantiId = viewModel.selectedPantiId.collectAsStateLifecycleAware().value
 
     val subtotal = items.sumOf { it.subtotal }
     val shipping = selectedRate?.price ?: 0
@@ -134,7 +141,6 @@ fun CheckoutRoute(
 
             Spacer(Modifier.height(20.dp))
 
-            // ============ KUPON ============
             Text("Kode Kupon", fontSize = 15.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(8.dp))
             if (appliedCoupon == null) {
@@ -189,6 +195,124 @@ fun CheckoutRoute(
                         onClick = { viewModel.selectRate(rate) }
                     )
                 }
+                Spacer(Modifier.height(20.dp))
+            }
+
+            if (rates.isNotEmpty()) {
+                Text("Wakaf Sepatu", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(8.dp))
+
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (wakafEnabled) MaterialTheme.colorScheme.primaryContainer
+                                        else MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .toggleable(
+                                    value = wakafEnabled,
+                                    onValueChange = { viewModel.onWakafToggled(it) }
+                                ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(
+                                checked = wakafEnabled,
+                                onCheckedChange = { viewModel.onWakafToggled(it) }
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("🤝 Wakafkan Sepatu Ini", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                Text(
+                                    "Salurkan sepatu ke panti asuhan binaan Muhammadiyah",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
+                        if (wakafEnabled) {
+                            Spacer(Modifier.height(12.dp))
+                            HorizontalDivider()
+                            Spacer(Modifier.height(12.dp))
+
+                            Text("Pilih Panti Asuhan Tujuan", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                            Spacer(Modifier.height(8.dp))
+
+                            if (pantiList.isEmpty()) {
+                                Text(
+                                    "Memuat daftar panti...",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            } else {
+                                var expanded by remember { mutableStateOf(false) }
+                                val selectedPanti = pantiList.find { it.id == selectedPantiId }
+
+                                ExposedDropdownMenuBox(
+                                    expanded = expanded,
+                                    onExpandedChange = { expanded = !expanded }
+                                ) {
+                                    OutlinedTextField(
+                                        value = selectedPanti?.nama ?: "Pilih panti...",
+                                        onValueChange = { },
+                                        readOnly = true,
+                                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                                        modifier = Modifier
+                                            .menuAnchor()
+                                            .fillMaxWidth(),
+                                        singleLine = true
+                                    )
+                                    ExposedDropdownMenu(
+                                        expanded = expanded,
+                                        onDismissRequest = { expanded = false }
+                                    ) {
+                                        pantiList.forEach { panti ->
+                                            DropdownMenuItem(
+                                                text = {
+                                                    Column {
+                                                        Text(panti.nama, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                                                        Text(
+                                                            "${panti.jumlahSantri} santri • ${panti.alamat.take(40)}...",
+                                                            fontSize = 11.sp,
+                                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                        )
+                                                    }
+                                                },
+                                                onClick = {
+                                                    viewModel.onPantiSelected(panti.id)
+                                                    expanded = false
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+
+                                if (selectedPanti != null) {
+                                    Spacer(Modifier.height(8.dp))
+                                    Card(
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = MaterialTheme.colorScheme.surface
+                                        )
+                                    ) {
+                                        Column(modifier = Modifier.padding(10.dp)) {
+                                            Text("📍 ${selectedPanti.nama}", fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold)
+                                            Text(selectedPanti.alamat, fontSize = 11.sp,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                lineHeight = 15.sp)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 Spacer(Modifier.height(20.dp))
             }
 

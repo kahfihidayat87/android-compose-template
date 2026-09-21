@@ -26,6 +26,7 @@ data class OrderCreateRequest(
     val guestName: String? = null,
     val guestEmail: String? = null,
     val couponCode: String? = null,
+    val wakafTarget: String? = null,
 )
 
 @Serializable

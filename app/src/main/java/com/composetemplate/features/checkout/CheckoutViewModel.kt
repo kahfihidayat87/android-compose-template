@@ -11,8 +11,10 @@ import com.composetemplate.core.data.network.dtos.PaymentMethodDto
 import com.composetemplate.core.data.repositories.CartRepository
 import com.composetemplate.core.data.repositories.CouponRepository
 import com.composetemplate.core.data.repositories.OrderRepository
+import com.composetemplate.core.data.repositories.PantiRepository
 import com.composetemplate.core.data.repositories.PaymentRepository
 import com.composetemplate.core.data.repositories.ShippingRepository
+import com.composetemplate.core.domain.model.Panti
 import com.composetemplate.core.domain.model.ShippingRate
 import com.composetemplate.core.util.ErrorExtractor
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,6 +31,7 @@ class CheckoutViewModel @Inject constructor(
     private val orderRepository: OrderRepository,
     private val paymentRepository: PaymentRepository,
     private val couponRepository: CouponRepository,
+    private val pantiRepository: PantiRepository,
 ) : ViewModel() {
 
     companion object {
@@ -77,15 +80,37 @@ class CheckoutViewModel @Inject constructor(
     private val _discount = MutableStateFlow(0)
     val discount: StateFlow<Int> = _discount.asStateFlow()
 
+    private val _wakafEnabled = MutableStateFlow(false)
+    val wakafEnabled: StateFlow<Boolean> = _wakafEnabled.asStateFlow()
+
+    private val _pantiList = MutableStateFlow<List<Panti>>(emptyList())
+    val pantiList: StateFlow<List<Panti>> = _pantiList.asStateFlow()
+
+    private val _selectedPantiId = MutableStateFlow<Int?>(null)
+    val selectedPantiId: StateFlow<Int?> = _selectedPantiId.asStateFlow()
+
     private var currentOrderId: Int? = null
 
     val items = cartRepository.items
+
+    init {
+        loadPantiList()
+    }
 
     fun onName(v: String) { _form.value = _form.value.copy(name = v) }
     fun onPhone(v: String) { _form.value = _form.value.copy(phone = v) }
     fun onAddress(v: String) { _form.value = _form.value.copy(address = v) }
     fun onPostalCode(v: String) { _form.value = _form.value.copy(postalCode = v.filter { it.isDigit() }.take(5)) }
     fun onCouponInput(v: String) { _couponInput.value = v.uppercase() }
+
+    fun onWakafToggled(enabled: Boolean) {
+        _wakafEnabled.value = enabled
+        if (!enabled) _selectedPantiId.value = null
+    }
+
+    fun onPantiSelected(id: Int) {
+        _selectedPantiId.value = id
+    }
 
     fun clearError() { _error.value = null }
     fun consumePaymentUrl() { _paymentUrl.value = null }
@@ -96,10 +121,25 @@ class CheckoutViewModel @Inject constructor(
                f.address.isNotBlank() && f.postalCode.length == 5
     }
 
+    fun isWakafValid(): Boolean {
+        if (!_wakafEnabled.value) return true
+        return _selectedPantiId.value != null
+    }
+
     fun currentStep(): Step = when {
         _rates.value.isEmpty() -> Step.ADDRESS
         _paymentMethods.value.isEmpty() -> Step.RATES
         else -> Step.PAYMENT
+    }
+
+    private fun loadPantiList() {
+        viewModelScope.launch {
+            try {
+                _pantiList.value = pantiRepository.getPantiList()
+            } catch (e: Exception) {
+                Log.e(TAG, "Load panti error", e)
+            }
+        }
     }
 
     fun applyCoupon() {
@@ -129,8 +169,6 @@ class CheckoutViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e(TAG, "Coupon error", e)
                 _error.value = "Gagal validasi kupon: ${ErrorExtractor.extract(e)}"
-                _appliedCoupon.value = null
-                _discount.value = 0
             } finally {
                 _loading.value = false
             }
@@ -182,8 +220,13 @@ class CheckoutViewModel @Inject constructor(
         when (currentStep()) {
             Step.ADDRESS -> checkRates()
             Step.RATES -> {
-                if (_selectedRate.value == null) _error.value = "Pilih kurir pengiriman dulu."
-                else submitOrderAndFetchMethods()
+                if (_selectedRate.value == null) {
+                    _error.value = "Pilih kurir pengiriman dulu."
+                } else if (!isWakafValid()) {
+                    _error.value = "Pilih panti asuhan tujuan wakaf dulu."
+                } else {
+                    submitOrderAndFetchMethods()
+                }
             }
             Step.PAYMENT -> {
                 if (_selectedMethod.value.isNullOrEmpty()) _error.value = "Pilih metode pembayaran dulu."
@@ -196,6 +239,11 @@ class CheckoutViewModel @Inject constructor(
         val f = _form.value
         val cartItems = cartRepository.items.value
         val courier = _selectedRate.value ?: return
+
+        val wakafTarget = if (_wakafEnabled.value && _selectedPantiId.value != null) {
+            val panti = _pantiList.value.find { it.id == _selectedPantiId.value }
+            if (panti != null) "Wakaf untuk ${panti.nama} (${panti.alamat})" else null
+        } else null
 
         viewModelScope.launch {
             _loading.value = true
@@ -211,6 +259,7 @@ class CheckoutViewModel @Inject constructor(
                         shippingPostalCode = f.postalCode,
                         courier = CourierRequest(courier.courierCode, courier.serviceCode),
                         couponCode = _appliedCoupon.value,
+                        wakafTarget = wakafTarget,
                     )
                 )
                 currentOrderId = order.id
@@ -254,13 +303,19 @@ class CheckoutViewModel @Inject constructor(
 
     fun getPrimaryButtonLabel(): String = when (currentStep()) {
         Step.ADDRESS -> "Cek Ongkir"
-        Step.RATES -> if (_selectedRate.value == null) "Pilih Kurir Dulu" else "Lanjut Bayar"
+        Step.RATES -> {
+            when {
+                _selectedRate.value == null -> "Pilih Kurir Dulu"
+                !isWakafValid() -> "Pilih Panti Dulu"
+                else -> "Lanjut Bayar"
+            }
+        }
         Step.PAYMENT -> "Bayar Sekarang"
     }
 
     fun isPrimaryButtonEnabled(): Boolean = when (currentStep()) {
         Step.ADDRESS -> isAddressValid()
-        Step.RATES -> _selectedRate.value != null
+        Step.RATES -> _selectedRate.value != null && isWakafValid()
         Step.PAYMENT -> !_selectedMethod.value.isNullOrEmpty()
     }
 }
