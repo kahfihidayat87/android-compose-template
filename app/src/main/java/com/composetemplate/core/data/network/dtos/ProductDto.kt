@@ -14,6 +14,7 @@ data class ProductDto(
     val img: String = "",
     val gallery: List<String> = emptyList(),
     val sizes: List<Int> = emptyList(),
+    val stockBySize: Map<String, Int> = emptyMap(),
     val weight: Int = 500,
     val desc: String = "",
 )

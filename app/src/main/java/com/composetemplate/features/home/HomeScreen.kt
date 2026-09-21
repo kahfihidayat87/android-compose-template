@@ -513,6 +513,29 @@ private fun ProductCard(
                         )
                     }
                 }
+
+                // Overlay STOK HABIS kalau semua ukuran kosong
+                if (product.isAllSizesOutOfStock) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.6f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.error,
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text(
+                                "STOK HABIS",
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
             }
 
             Column(modifier = Modifier.padding(10.dp)) {

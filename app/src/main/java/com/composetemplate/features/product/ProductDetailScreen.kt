@@ -56,7 +56,9 @@ internal fun ProductDetailRoute(
     val product = viewModel.product.collectAsStateLifecycleAware().value
     val selectedSize = viewModel.selectedSize.collectAsStateLifecycleAware().value
     val quantity = viewModel.quantity.collectAsStateLifecycleAware().value
+    val maxQuantity = viewModel.maxQuantity.collectAsStateLifecycleAware().value
     val added = viewModel.addedToCart.collectAsStateLifecycleAware().value
+    val errorMsg = viewModel.errorMessage.collectAsStateLifecycleAware().value
 
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
@@ -72,6 +74,13 @@ internal fun ProductDetailRoute(
         }
     }
 
+    LaunchedEffect(errorMsg) {
+        if (!errorMsg.isNullOrEmpty()) {
+            snackbarHostState.showSnackbar(errorMsg)
+            viewModel.consumeError()
+        }
+    }
+
     if (product == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
@@ -82,6 +91,7 @@ internal fun ProductDetailRoute(
                 product = product,
                 selectedSize = selectedSize,
                 quantity = quantity,
+                maxQuantity = maxQuantity,
                 onBackClick = onBackClick,
                 onSizeSelected = viewModel::onSizeSelected,
                 onQuantityChanged = viewModel::onQuantityChanged,
@@ -114,6 +124,7 @@ fun ProductDetailScreen(
     product: Product,
     selectedSize: Int?,
     quantity: Int,
+    maxQuantity: Int,
     onBackClick: () -> Unit,
     onSizeSelected: (Int) -> Unit,
     onQuantityChanged: (Int) -> Unit,
@@ -123,6 +134,9 @@ fun ProductDetailScreen(
     onCartClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val selectedStock = selectedSize?.let { product.stockOf(it) } ?: 0
+    val isOutOfStock = product.isAllSizesOutOfStock
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -166,6 +180,22 @@ fun ProductDetailScreen(
                     )
                 } else {
                     Text("S", fontSize = 120.sp)
+                }
+                // Badge HABIS di atas gambar
+                if (isOutOfStock) {
+                    Surface(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = MaterialTheme.colorScheme.error.copy(alpha = 0.9f),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            "STOK HABIS",
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Black,
+                            color = MaterialTheme.colorScheme.onError
+                        )
+                    }
                 }
             }
 
@@ -215,12 +245,34 @@ fun ProductDetailScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     product.sizes.forEach { size ->
+                        val stock = product.stockOf(size)
+                        val isSizeAvailable = stock > 0
                         FilterChip(
                             selected = selectedSize == size,
+                            enabled = isSizeAvailable,
                             onClick = { onSizeSelected(size) },
-                            label = { Text(size.toString()) }
+                            label = {
+                                Text(
+                                    text = size.toString(),
+                                    textDecoration = if (!isSizeAvailable) TextDecoration.LineThrough else null
+                                )
+                            }
                         )
                     }
+                }
+
+                // Info stok ukuran terpilih
+                if (selectedSize != null && selectedStock > 0) {
+                    Spacer(Modifier.height(8.dp))
+                    val stockColor = if (selectedStock < 5) MaterialTheme.colorScheme.error
+                                     else MaterialTheme.colorScheme.onSurfaceVariant
+                    Text(
+                        text = if (selectedStock < 5) "⚡ Stok tersisa $selectedStock pcs!"
+                               else "Stok tersedia: $selectedStock pcs",
+                        fontSize = 12.sp,
+                        fontWeight = if (selectedStock < 5) FontWeight.Bold else FontWeight.Normal,
+                        color = stockColor
+                    )
                 }
 
                 Spacer(Modifier.height(20.dp))
@@ -243,8 +295,17 @@ fun ProductDetailScreen(
                     )
                     OutlinedButton(
                         onClick = { onQuantityChanged(quantity + 1) },
-                        enabled = quantity < 10
+                        enabled = quantity < maxQuantity
                     ) { Text("+", fontSize = 20.sp) }
+                }
+                // Info max qty
+                if (selectedSize != null && maxQuantity < 10) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "Maksimal $maxQuantity pcs (sesuai stok)",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
 
                 Spacer(Modifier.height(20.dp))
@@ -280,12 +341,9 @@ fun ProductDetailScreen(
                         fontWeight = FontWeight.Bold
                     )
                 }
-                // Ikon keranjang kecil di samping tombol Tambah
                 OutlinedIconButton(
                     onClick = onCartClick,
-                    modifier = Modifier
-                        .size(52.dp)
-                        .padding(end = 8.dp)
+                    modifier = Modifier.size(52.dp).padding(end = 8.dp)
                 ) {
                     Icon(
                         Icons.Default.ShoppingCart,
@@ -295,10 +353,13 @@ fun ProductDetailScreen(
                 }
                 Button(
                     onClick = onAddToCart,
-                    enabled = selectedSize != null,
+                    enabled = selectedSize != null && selectedStock > 0,
                     modifier = Modifier.height(52.dp)
                 ) {
-                    Text("Tambah ke Keranjang", fontWeight = FontWeight.Bold)
+                    Text(
+                        text = if (isOutOfStock) "Stok Habis" else "Tambah ke Keranjang",
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }

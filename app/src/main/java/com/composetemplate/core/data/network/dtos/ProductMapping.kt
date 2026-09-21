@@ -13,6 +13,7 @@ fun ProductDto.toProduct(): Product {
         badge = badge,
         img = img,
         sizes = sizes,
+        stockBySize = stockBySize,
         weight = weight,
         desc = desc,
     )
